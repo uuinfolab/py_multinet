@@ -65,7 +65,7 @@ with open("README.md", "r") as fh:
 try:
     setup(
     name='uunet-magnani',
-    version='0.0.2',
+    version='0.0.3',
     author='Matteo Magnani',
     author_email='matteo.magnani@it.uu.se',
     description='python porting of the R multinet library',

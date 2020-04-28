@@ -756,10 +756,10 @@ addEdges(
 {
     auto mnet = rmnet.get_mlnet();
 
-    py::list a_from = edges["actor_from"].cast<py::list>();
-    py::list l_from = edges["layer_from"].cast<py::list>();
-    py::list a_to = edges["actor_to"].cast<py::list>();
-    py::list l_to = edges["layer_to"].cast<py::list>();
+    py::list a_from = edges["from_actor"].cast<py::list>();
+    py::list l_from = edges["from_layer"].cast<py::list>();
+    py::list a_to = edges["to_actor"].cast<py::list>();
+    py::list l_to = edges["to_layer"].cast<py::list>();
 
     
     // New in v3.2: automatically add actors

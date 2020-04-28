@@ -12,7 +12,7 @@ endif()
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fno-inline -std=c++14")
 
-add_subdirectory(pybind11)
+add_subdirectory(ext/pybind11)
 add_subdirectory(ext/uunet)
 
 file (GLOB_RECURSE SOURCES C++/*cpp)
