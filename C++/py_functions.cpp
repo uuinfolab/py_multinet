@@ -1185,7 +1185,7 @@ getAttributes(
 }
 
 
-py::dict
+py::list
 getValues(
     PyMLNetwork& rmnet,
     const std::string& attribute_name,
@@ -1200,12 +1200,12 @@ getValues(
     {
         if (vertex_matrix.size() > 0)
         {
-            py::print("Warning: unused parameter: \"vertices\"");
+            py::print("[Warning] unused parameter: \"vertices\"");
         }
 
         if (edge_matrix.size() > 0)
         {
-            py::print("Warning: unused parameter: \"edges\"");
+            py::print("[Warning] unused parameter: \"edges\"");
         }
 
         auto actors = resolve_actors(mnet,actor_names);
@@ -1226,9 +1226,7 @@ getValues(
                 value.append(attributes->get_double(actor,att->name).value);
             }
 
-            py::dict res;
-            res["value"] = value;
-            return res;
+            return value;
         }
 
         else if (att->type==uu::core::AttributeType::STRING)
@@ -1240,9 +1238,7 @@ getValues(
                 value.append(attributes->get_string(actor,att->name).value);
             }
 
-            py::dict res;
-            res["value"] = value;
-            return res;
+            return value;
         }
 
         else
@@ -1257,7 +1253,7 @@ getValues(
     {
         if (edge_matrix.size() > 0)
         {
-            py::print("Warning: unused parameter: \"edges\"");
+            py::print("[Warning] unused parameter: \"edges\"");
         }
 
         auto vertices = resolve_vertices(mnet,vertex_matrix);
@@ -1300,11 +1296,9 @@ getValues(
 
             value.append(attributes->get_double(vertex.first,attribute_name).value);
             
-        }
+            }
             
-            py::dict res;
-            res["value"] = value;
-            return res;
+            return value;
         }
 
         else if (attribute_type == uu::core::AttributeType::STRING)
@@ -1321,9 +1315,7 @@ getValues(
                 
             }
             
-            py::dict res;
-            res["value"] = value;
-            return res;
+            return value;
         }
         
         else
@@ -1473,12 +1465,12 @@ setValues(
 
         if (vertex_matrix.size() > 0)
         {
-            py::print("Warning: unused parameter: \"vertices\"");
+            py::print("[Warning] unused parameter: \"vertices\"");
         }
 
         if (edge_matrix.size() > 0)
         {
-            py::print("Warning: unused parameter: \"edges\"");
+            py::print("[Warning] unused parameter: \"edges\"");
         }
 
         auto actors = resolve_actors(mnet,actor_names);
@@ -1539,7 +1531,7 @@ setValues(
     {
         if (edge_matrix.size() > 0)
         {
-            py::print("Warning: unused parameter: \"edges\"");
+            py::print("[Warning] unused parameter: \"edges\"");
         }
 
         auto vertices = resolve_vertices(mnet,vertex_matrix);
@@ -2804,7 +2796,7 @@ infomap_ml(const PyMLNetwork& rmnet,
 
     catch (std::exception& e)
     {
-        py::print("Warning: could not run external library: " + std::string(e.what()));
+        py::print("[Warning] could not run external library: " + std::string(e.what()));
         py::print("Returning empty community set.");
     }
 
@@ -2830,7 +2822,7 @@ abacus_ml(
 
     catch (std::exception& e)
     {
-        py::print("Warning: could not run external library: " + std::string(e.what()));
+        py::print("[Warning] could not run external library: " + std::string(e.what()));
         py::print("Returning empty community set.");
     }
 

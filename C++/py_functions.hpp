@@ -226,7 +226,7 @@ getAttributes(
     const std::string& target
 );
 
-py::dict
+py::list
 getValues(
     PyMLNetwork& rmnet,
     const std::string& attribute_name,

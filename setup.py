@@ -65,7 +65,7 @@ with open("README.md", "r") as fh:
 try:
     setup(
     name='uunet-magnani',
-    version='0.0.3',
+    version='0.0.4',
     author='Matteo Magnani',
     author_email='matteo.magnani@it.uu.se',
     description='python porting of the R multinet library',
@@ -81,6 +81,10 @@ try:
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+    ],
+    install_requires=[
+        'networkx',
+        'matplotlib',
     ],
     python_requires='>=3.6',
     )

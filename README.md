@@ -10,7 +10,9 @@ This library was originally based on the book: Multilayer Social Networks, by Di
 
 To install and use the library you need:
 
-* Miao
+*
+* python3
+* The following packages installed: networkx, pkgutil, os, matplotlib, itertools, functools.
 
 If you are interested in participating in the development of the library, or if you just want to play with the code and modify it, please look at Section _Contribute_ below.
 
@@ -21,6 +23,14 @@ TBD
 ## Contribute
 
 TBD
+
+### New distribution
+
+python setup.py sdist bdist_wheel
+python3 -m twine upload --repository testpypi dist/*
+
+git submodule update --remote --merge
+git commit
 
 ## Contact
 
