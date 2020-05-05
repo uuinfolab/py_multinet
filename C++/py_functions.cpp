@@ -17,7 +17,7 @@
 #include "community/abacus.hpp"
 #include "community/infomap.hpp"
 #include "community/ml-cpm.hpp"
-#include "mnet/community/modularity.hpp"
+#include "community/modularity.hpp"
 #include "io/read_multilayer_network.hpp"
 #include "io/write_multilayer_network.hpp"
 #include "measures/degree_ml.hpp"
@@ -33,7 +33,7 @@
 #include "layout/multiforce.hpp"
 #include "layout/circular.hpp"
 
-using M = uu::net::AttributedHomogeneousMultilayerNetwork;
+using M = uu::net::MultilayerNetwork;
 using G = uu::net::Network;
 
     // CREATION AND STORAGE
@@ -43,7 +43,7 @@ emptyMultilayer(
     const std::string& name
 )
 {
-    return PyMLNetwork(uu::net::create_shared_attributed_homogeneous_multilayer_network(name));
+    return PyMLNetwork(std::make_shared<uu::net::MultilayerNetwork>(name));
 }
 
 PyMLNetwork
@@ -95,7 +95,7 @@ ba_evolution_model(
     size_t m
 )
 {
-    auto pa = std::make_shared<uu::net::PAEvolutionModel<uu::net::AttributedHomogeneousMultilayerNetwork>>(m0, m);
+    auto pa = std::make_shared<uu::net::PAEvolutionModel<uu::net::MultilayerNetwork>>(m0, m);
 
     return PyEvolutionModel(pa,"Preferential attachment evolution model (" + std::to_string(m0) + "," + std::to_string(m) + ")");
 }
@@ -106,7 +106,7 @@ er_evolution_model(
     size_t n
 )
 {
-    auto er = std::make_shared<uu::net::EREvolutionModel<uu::net::AttributedHomogeneousMultilayerNetwork>>(n);
+    auto er = std::make_shared<uu::net::EREvolutionModel<uu::net::MultilayerNetwork>>(n);
 
     return PyEvolutionModel(er, "Uniform evolution model (" + std::to_string(n) + ")");
 }
@@ -179,7 +179,7 @@ growMultiplex(
         }
     }
 
-    std::vector<uu::net::EvolutionModel<uu::net::AttributedHomogeneousMultilayerNetwork>*> models(evolution_model.size());
+    std::vector<uu::net::EvolutionModel<uu::net::MultilayerNetwork>*> models(evolution_model.size());
 
     for (size_t i=0; i<models.size(); i++)
     {
@@ -187,11 +187,11 @@ growMultiplex(
 
     }
 
-    auto res = uu::net::create_shared_attributed_homogeneous_multilayer_network("synth");
+    auto res = std::make_shared<uu::net::MultilayerNetwork>("synth");
 
     for (size_t a=0; a<num_actors; a++)
     {
-        res->vertices()->add("a"+std::to_string(a));
+        res->actors()->add("a"+std::to_string(a));
     }
 
     std::vector<std::string> layer_names;
@@ -238,7 +238,7 @@ actors(
 
     if (layer_names.size()==0)
     {
-        for (auto actor: *mnet->vertices())
+        for (auto actor: *mnet->actors())
         {
             actors.append(actor->name);
         }
@@ -427,7 +427,7 @@ numActors(
 
     if (layer_names.size()==0)
     {
-        return mnet->vertices()->size();
+        return mnet->actors()->size();
     }
 
     std::vector<uu::net::Network*> layers = resolve_layers(mnet,layer_names);
@@ -584,7 +584,7 @@ actor_neighbors(
 {
     std::unordered_set<std::string> res_neighbors;
     auto mnet = rmnet.get_mlnet();
-    auto actor = mnet->vertices()->get(actor_name);
+    auto actor = mnet->actors()->get(actor_name);
 
     if (!actor)
     {
@@ -613,7 +613,7 @@ actor_xneighbors(
 {
     std::unordered_set<std::string> res_xneighbors;
     auto mnet = rmnet.get_mlnet();
-    auto actor = mnet->vertices()->get(actor_name);
+    auto actor = mnet->actors()->get(actor_name);
 
     if (!actor)
     {
@@ -703,7 +703,7 @@ addActors(
     for (py::handle obj: actor_names)
     {
         std::string actor_name = obj.attr("__str__")().cast<std::string>();
-        mnet->vertices()->add(actor_name);
+        mnet->actors()->add(actor_name);
     }
 }
 
@@ -722,7 +722,7 @@ addNodes(
     for (py::handle obj: a)
     {
         std::string actor_name = obj.attr("__str__")().cast<std::string>();
-        mnet->vertices()->add(actor_name);
+        mnet->actors()->add(actor_name);
     }
     // weN
     
@@ -733,7 +733,7 @@ addNodes(
         std::string actor_name = (*actor_iter).attr("__str__")().cast<std::string>();
         std::string layer_name = (*layer_iter).attr("__str__")().cast<std::string>();
         
-        auto actor = mnet->vertices()->get(actor_name);
+        auto actor = mnet->actors()->get(actor_name);
 
         auto layer = mnet->layers()->get(layer_name);
 
@@ -766,12 +766,12 @@ addEdges(
     for (py::handle obj: a_from)
     {
         std::string actor_name = obj.attr("__str__")().cast<std::string>();
-        mnet->vertices()->add(actor_name);
+        mnet->actors()->add(actor_name);
     }
     for (py::handle obj: a_to)
     {
         std::string actor_name = obj.attr("__str__")().cast<std::string>();
-        mnet->vertices()->add(actor_name);
+        mnet->actors()->add(actor_name);
     }
     // weN
     
@@ -787,9 +787,9 @@ addEdges(
         std::string actor_name2 = (*actor_to_iter).attr("__str__")().cast<std::string>();
         std::string layer_name2 = (*layer_to_iter).attr("__str__")().cast<std::string>();
         
-        auto actor1 = mnet->vertices()->get(actor_name1);
+        auto actor1 = mnet->actors()->get(actor_name1);
 
-        auto actor2 = mnet->vertices()->get(actor_name2);
+        auto actor2 = mnet->actors()->get(actor_name2);
 
         auto layer1 = mnet->layers()->get(layer_name1);
 
@@ -903,8 +903,8 @@ deleteActors(
     for (py::handle obj: actor_names)
     {
         std::string actor_name = obj.attr("__str__")().cast<std::string>();
-        auto actor = mnet->vertices()->get(actor_name);
-        mnet->vertices()->erase(actor);
+        auto actor = mnet->actors()->get(actor_name);
+        mnet->actors()->erase(actor);
     }
 }
 
@@ -994,7 +994,7 @@ newAttributes(
         for (py::handle obj: attribute_names)
         {
             std::string attr_name = obj.attr("__str__")().cast<std::string>();
-            mnet->vertices()->attr()->add(attr_name,a_type);
+            mnet->actors()->attr()->add(attr_name,a_type);
         }
     }
 
@@ -1094,7 +1094,7 @@ getAttributes(
 
     if (target=="actor")
     {
-        auto attributes = mnet->vertices()->attr();
+        auto attributes = mnet->actors()->attr();
         py::list a_name, a_type;
 
         for (auto att: *attributes)
@@ -1209,7 +1209,7 @@ getValues(
         }
 
         auto actors = resolve_actors(mnet,actor_names);
-        auto attributes = mnet->vertices()->attr();
+        auto attributes = mnet->actors()->attr();
         auto att = attributes->get(attribute_name);
 
         if (!att)
@@ -1474,7 +1474,7 @@ setValues(
         }
 
         auto actors = resolve_actors(mnet,actor_names);
-        auto attributes = mnet->vertices()->attr();
+        auto attributes = mnet->actors()->attr();
         auto att = attributes->get(attribute_name);
 
         if (!att)
@@ -2670,7 +2670,7 @@ distance_ml(
 {
     auto mnet = rmnet.get_mlnet();
     std::vector<const uu::net::Vertex*> actors_to = resolve_actors(mnet,to_actors);
-    auto actor_from = mnet->vertices()->get(from_actor);
+    auto actor_from = mnet->actors()->get(from_actor);
 
     py::dict res;
     
@@ -2881,7 +2881,7 @@ to_list(
         }
 
         int l = mnet->layers()->index_of(layer);
-        auto actor = mnet->vertices()->get(std::string(cs_actor[i]));
+        auto actor = mnet->actors()->get(std::string(cs_actor[i]));
 
         if (!actor)
         {
@@ -3145,7 +3145,7 @@ toNetworkxNodeDict(
             py::dict attr_values;
             
             // actor atributes
-            auto actor_attr = mnet->vertices()->attr();
+            auto actor_attr = mnet->actors()->attr();
             for (auto attr: *actor_attr)
             {
                 switch (attr->type)

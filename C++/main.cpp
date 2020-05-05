@@ -14,7 +14,7 @@ PYBIND11_MODULE(_multinet, m) {
 
     /*********************************************************************************/
     py::class_<PyMLNetwork>(m, "PyMLNetwork")
-    .def(py::init<std::shared_ptr<uu::net::AttributedHomogeneousMultilayerNetwork>>())
+    .def(py::init<std::shared_ptr<uu::net::MultilayerNetwork>>())
     .def("__repr__",
          [](const PyMLNetwork& net) {
              return net.get_mlnet()->summary();
@@ -23,7 +23,7 @@ PYBIND11_MODULE(_multinet, m) {
     
     /*********************************************************************************/
     py::class_<PyEvolutionModel>(m, "PyEvolutionModel")
-    .def(py::init<std::shared_ptr<uu::net::EvolutionModel<uu::net::AttributedHomogeneousMultilayerNetwork>>,
+    .def(py::init<std::shared_ptr<uu::net::EvolutionModel<uu::net::MultilayerNetwork>>,
          std::string>())
     .def("__repr__",
          [](const PyEvolutionModel& mod) {
@@ -53,6 +53,12 @@ PYBIND11_MODULE(_multinet, m) {
         add_layers
         add_vertices
         add_edges
+          
+        Examples
+        ________
+        >>> ml.empty()
+        Multilayer Network [0 actors, 0 layers, 0 vertices, 0 edges (0,0)]
+          
         )pbdoc");
 
     /*********************************************************************************/
@@ -78,8 +84,8 @@ PYBIND11_MODULE(_multinet, m) {
         Returns
         -------
         PyMLNetwork
-        A multilayer network.
-        
+            A multilayer network.
+          
         Notes
         _____
         There are two network formats accepted: multiplex (default) or multilayer.
@@ -449,7 +455,7 @@ PYBIND11_MODULE(_multinet, m) {
         Returns
         -------
         dict
-          With five lists: "actor_from", "layer_from", "actor_to", "layer_to", "dir".
+            With five lists: "actor_from", "layer_from", "actor_to", "layer_to", "dir".
         
         See Also
         ________
@@ -544,11 +550,11 @@ PYBIND11_MODULE(_multinet, m) {
         n : PyMLNetwork
             A multilayer network.
         layers : list of str
-          A list of names of layers belonging to the network. Only the actors/vertices in these
-          layers are returned. If the array is empty, all the vertices in the network are
-          returned. Notice that this may not correspond to the list of actors: there can be
-          actors that are not present in any layer. These would be returned only using the
-          actors() function.
+            A list of names of layers belonging to the network. Only the actors/vertices in these
+            layers are returned. If the array is empty, all the vertices in the network are
+            returned. Notice that this may not correspond to the list of actors: there can be
+            actors that are not present in any layer. These would be returned only using the
+            actors() function.
         
         Returns
         -------
@@ -659,8 +665,8 @@ PYBIND11_MODULE(_multinet, m) {
         Returns
         -------
         list
-          A list of actor names who are connected to the input actor on at least one of
-          the specified layers.
+            A list of actor names who are connected to the input actor on at least one of
+            the specified layers.
         
         References
         __________

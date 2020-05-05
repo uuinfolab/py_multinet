@@ -19,49 +19,49 @@
 #include "objects/Edge.hpp"
 #include "networks/Network.hpp"
 #include "community/VertexLayerCommunity.hpp"
-#include "networks/AttributedHomogeneousMultilayerNetwork.hpp"
+#include "networks/MultilayerNetwork.hpp"
 
 namespace py = pybind11;
 
 std::vector<uu::net::Network*>
 resolve_layers(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 );
 
 std::unordered_set<uu::net::Network*>
 resolve_layers_unordered(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 );
 
 std::unordered_set<const uu::net::Network*>
 resolve_const_layers_unordered(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 );
 
 std::vector<const uu::net::Vertex*>
 resolve_actors(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 );
 
 std::unordered_set<const uu::net::Vertex*>
 resolve_actors_unordered(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 );
 
 std::vector<std::pair<const uu::net::Vertex*, uu::net::Network*>>
         resolve_vertices(
-            const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+            const uu::net::MultilayerNetwork* mnet,
             const py::dict& vertex_matrix
         );
 
 std::vector<std::tuple<const uu::net::Vertex*, uu::net::Network*, const uu::net::Vertex*, uu::net::Network*>>
         resolve_edges(
-            const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+            const uu::net::MultilayerNetwork* mnet,
             const py::dict& edge_matrix
         );
 
@@ -79,7 +79,7 @@ to_dataframe(
 std::unique_ptr<uu::net::CommunityStructure<uu::net::VertexLayerCommunity<const uu::net::Network>>>
 to_communities(
                const py::dict& com,
-               const uu::net::AttributedHomogeneousMultilayerNetwork* mnet
+               const uu::net::MultilayerNetwork* mnet
                );
 
 

@@ -7,7 +7,7 @@
 
 std::vector<uu::net::Network*>
 resolve_layers(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 )
 {
@@ -47,7 +47,7 @@ resolve_layers(
 
 std::unordered_set<uu::net::Network*>
 resolve_layers_unordered(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 )
 {
@@ -84,7 +84,7 @@ resolve_layers_unordered(
 
 std::unordered_set<const uu::net::Network*>
 resolve_const_layers_unordered(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 )
 {
@@ -120,18 +120,18 @@ resolve_const_layers_unordered(
 
 std::vector<const uu::net::Vertex*>
 resolve_actors(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 )
 {
-    int result_size = names.size()?names.size():mnet->vertices()->size();
+    int result_size = names.size()?names.size():mnet->actors()->size();
     std::vector<const uu::net::Vertex*> res(result_size);
 
     if (names.size()==0)
     {
         size_t i = 0;
 
-        for (auto actor: *mnet->vertices())
+        for (auto actor: *mnet->actors())
         {
             res[i] = actor;
             i++;
@@ -144,7 +144,7 @@ resolve_actors(
         for (py::handle obj: names)
         {
             std::string name = obj.attr("__str__")().cast<std::string>();
-            auto actor = mnet->vertices()->get(name);
+            auto actor = mnet->actors()->get(name);
 
             if (!actor)
             {
@@ -161,7 +161,7 @@ resolve_actors(
 
 std::unordered_set<const uu::net::Vertex*>
 resolve_actors_unordered(
-    const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+    const uu::net::MultilayerNetwork* mnet,
     const py::list& names
 )
 {
@@ -169,7 +169,7 @@ resolve_actors_unordered(
 
     if (names.size()==0)
     {
-        for (auto actor: *mnet->vertices())
+        for (auto actor: *mnet->actors())
         {
             res.insert(actor);
         }
@@ -181,7 +181,7 @@ resolve_actors_unordered(
         {
             std::string name = obj.attr("__str__")().cast<std::string>();
             
-            auto actor = mnet->vertices()->get(name);
+            auto actor = mnet->actors()->get(name);
 
             if (!actor)
             {
@@ -197,7 +197,7 @@ resolve_actors_unordered(
 
 std::vector<std::pair<const uu::net::Vertex*, uu::net::Network*>>
         resolve_vertices(
-            const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+            const uu::net::MultilayerNetwork* mnet,
             const py::dict& vertex_matrix
         )
 {
@@ -212,7 +212,7 @@ std::vector<std::pair<const uu::net::Vertex*, uu::net::Network*>>
     
     for (size_t i=0; i<a.size(); i++)
     {
-        auto actor = mnet->vertices()->get(a.at(i));
+        auto actor = mnet->actors()->get(a.at(i));
 
         if (!actor)
         {
@@ -241,7 +241,7 @@ std::vector<std::pair<const uu::net::Vertex*, uu::net::Network*>>
 
 std::vector<std::tuple<const uu::net::Vertex*, uu::net::Network*, const uu::net::Vertex*, uu::net::Network*>>
         resolve_edges(
-            const uu::net::AttributedHomogeneousMultilayerNetwork* mnet,
+            const uu::net::MultilayerNetwork* mnet,
             const py::dict& edges
         )
 {
@@ -259,14 +259,14 @@ std::vector<std::tuple<const uu::net::Vertex*, uu::net::Network*, const uu::net:
     
     for (size_t i=0; i<a_from.size(); i++)
     {
-        auto actor1 = mnet->vertices()->get(std::string(a_from.at(i)));
+        auto actor1 = mnet->actors()->get(std::string(a_from.at(i)));
 
         if (!actor1)
         {
             throw std::runtime_error("cannot find actor " + std::string(a_from.at(i)));
         }
 
-        auto actor2 = mnet->vertices()->get(std::string(a_to.at(i)));
+        auto actor2 = mnet->actors()->get(std::string(a_to.at(i)));
 
         if (!actor2)
         {
@@ -380,7 +380,7 @@ to_dataframe(
 std::unique_ptr<uu::net::CommunityStructure<uu::net::VertexLayerCommunity<const uu::net::Network>>>
 to_communities(
                const py::dict& com,
-               const uu::net::AttributedHomogeneousMultilayerNetwork* mnet
+               const uu::net::MultilayerNetwork* mnet
                )
 {
     std::vector<std::string> cs_actor = com["actor"].cast<std::vector<std::string>>();;
@@ -398,7 +398,7 @@ to_communities(
         int comm_id = cs_cid[i];
         auto layer = mnet->layers()->get(std::string(cs_layer[i]));
         if (!layer) throw std::runtime_error("cannot find layer " + std::string(cs_layer[i]) + " (community structure not compatible with this network?)");
-        auto actor = mnet->vertices()->get(std::string(cs_actor[i]));
+        auto actor = mnet->actors()->get(std::string(cs_actor[i]));
         if (!actor) throw std::runtime_error("cannot find actor " + std::string(cs_actor[i]) + " (community structure not compatible with this network?)");
         
         auto iv = std::make_pair(actor, layer);

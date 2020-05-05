@@ -2,12 +2,12 @@
 #ifndef UU_MULTINET_PYMLNETWORK_H_
 #define UU_MULTINET_PYMLNETWORK_H_
 
-#include "networks/AttributedHomogeneousMultilayerNetwork.hpp"
+#include "networks/MultilayerNetwork.hpp"
 
 class PyMLNetwork
 {
 private:
-    std::shared_ptr<uu::net::AttributedHomogeneousMultilayerNetwork> ptr;
+    std::shared_ptr<uu::net::MultilayerNetwork> ptr;
     
 public:
     
@@ -18,12 +18,12 @@ public:
         return ptr->name;
     }
     
-    PyMLNetwork(std::shared_ptr<uu::net::AttributedHomogeneousMultilayerNetwork> ptr) : ptr(ptr)
+    PyMLNetwork(std::shared_ptr<uu::net::MultilayerNetwork> ptr) : ptr(ptr)
     {
             // @todo check not null?
     }
     
-    uu::net::AttributedHomogeneousMultilayerNetwork*
+    uu::net::MultilayerNetwork*
     get_mlnet() const
     {
         return ptr.get();
