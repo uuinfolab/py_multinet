@@ -59,19 +59,19 @@ class CMakeBuild(build_ext):
 
 from subprocess import CalledProcessError
 
-with open("README.md", "r") as fh:
+with open("DESCRIPTION", "r") as fh:
     long_description = fh.read()
 
 try:
     setup(
-    name='uunet-magnani',
-    version='0.0.4',
+    name='uunet',
+    version='0.1',
     author='Matteo Magnani',
     author_email='matteo.magnani@it.uu.se',
     description='python porting of the R multinet library',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://bitbucket.org/uuinfolab/uunet",
+    url="https://bitbucket.org/uuinfolab/py_multinet",
     ext_modules=[CMakeExtension('uunet._multinet')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
