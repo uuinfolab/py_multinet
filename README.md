@@ -13,7 +13,9 @@ This library was originally based on the book: Multilayer Social Networks, by Di
 
 ## Installation
 
-pip install python-multinet
+pip install uunet
+
+(this provides the module: uunet.multinet)
 
 ## Contact
 
