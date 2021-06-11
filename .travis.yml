@@ -6,8 +6,6 @@ jobs:
   include:
     # perform a linux build
     - services: docker
-      env: MANYLINUX=manylinux2010_x86_64
-           PYTHON_VERSION=cp39-cp39
     # perform a linux ARMv8 build
     - services: docker
       arch: arm64
@@ -23,7 +21,6 @@ jobs:
     # and a mac build
     - os: osx
       osx_image: xcode11.3
-      env: PYTHON_VERSION=3.8.2
       language: shell
     # and a windows build
     - os: windows
@@ -36,7 +33,7 @@ jobs:
 
 env:
   global:
-    - CIBW_BUILD="cp36-* cp37-* cp38-* cp39-*"
+    - CIBW_BUILD="cp38-* cp39-*"
     - CIBW_BUILD_VERBOSITY=3
     - CIBW_BEFORE_BUILD="pip install tox"
     - CIBW_TEST_COMMAND="cd {project} && tox"
