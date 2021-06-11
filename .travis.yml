@@ -41,10 +41,10 @@ env:
     - BUILD_OUTPUT_PATH="$(uname | perl -ne 'print lc')-tgcrypto-wheels"
 
 install:
-  - python3 -m pip install cibuildwheel
+  - python3 -m pip install cibuildwheel==1.7.2
   
 script:
   - cibuildwheel --output-dir $BUILD_OUTPUT_PATH
   - tar zcf $BUILD_OUTPUT_PATH.tar.gz $BUILD_OUTPUT_PATH
-  - echo $(curl -sF "file=@$BUILD_OUTPUT_PATH.tar.gz" https://file.io)
+#  - echo $(curl -sF "file=@$BUILD_OUTPUT_PATH.tar.gz" https://file.io)
 
