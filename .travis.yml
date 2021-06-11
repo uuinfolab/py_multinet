@@ -6,7 +6,8 @@ jobs:
   include:
     # perform a linux build
     - services: docker
-      python: 3.8
+      env: MANYLINUX=manylinux2010_x86_64
+           PYTHON_VERSION=cp39-cp39
     # perform a linux ARMv8 build
     - services: docker
       arch: arm64
@@ -21,7 +22,8 @@ jobs:
       arch: s390x
     # and a mac build
     - os: osx
-      osx_image: xcode11.2
+      osx_image: xcode11.3
+      env: PYTHON_VERSION=3.8.2
       language: shell
     # and a windows build
     - os: windows
