@@ -8,6 +8,7 @@ pipelines:
         script:  
           - apt-get update -y
           - apt-get install -y python3
+          - apt-get install -y python3-pip
           - python3 -m pip install wheel 
           - python3 -m pip install -U cibuildwheel
           - python3 -m pip install -U setuptools
