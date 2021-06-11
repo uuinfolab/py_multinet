@@ -1,0 +1,107 @@
+name: Wheels
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  sdist:
+    name: Source distribution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.9
+
+      - name: Run check-manifest
+        run: |
+          python -m check_manifest
+
+      - name: Build sdist
+        run: |
+          python -m build --sdist --outdir wheelhouse
+
+      - name: Check sdist
+        run: |
+          python -m twine check wheelhouse/*
+
+  wheels:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_x86_64
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_i686
+          - runs-on: macos-latest
+            cibw-arch: macosx_x86_64
+          - runs-on: macos-latest
+            cibw-arch: macosx_arm64
+          - runs-on: macos-latest
+            cibw-arch: macosx_universal2
+          - runs-on: windows-latest
+            cibw-arch: win_amd64
+          - runs-on: windows-latest
+            cibw-arch: win32
+            python-arch: x86
+
+    name: Wheels • ${{ matrix.cibw-arch }}
+    runs-on: ${{ matrix.runs-on }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+          architecture: ${{ matrix.python-arch }}
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.9
+
+      - name: Install requirements
+        run: |
+          python -m pip install cibuildwheel twine
+
+      - name: Configure cibuildwheel
+        shell: bash
+        run: |
+          CMAKE_ARCH="${{ matrix.cibw-arch == 'win32' && '-A Win32' || '' }}"
+          CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw-arch == 'macosx_x86_64' && 'x86_64' || matrix.cibw-arch == 'macosx_arm64' && 'arm64' || matrix.cibw-arch == 'macosx_universal2' && '"arm64;x86_64"' || '' }}
+          echo "CIBW_ARCHS_MACOS=x86_64 arm64 universal2" >> $GITHUB_ENV
+          echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
+          CIBW_ENVIRONMENT_COMMON="PARSELMOUTH_EXTRA_CMAKE_ARGS=\"-DPREBUILT_DEPENDENCIES=\$(python -c 'import os; print(os.getcwd().replace(os.path.sep, '/'))')/build_dependencies\" CMAKE_BUILD_PARALLEL_LEVEL=2"
+          echo "CIBW_ENVIRONMENT=$CIBW_ENVIRONMENT_COMMON" >> $GITHUB_ENV
+          echo "CIBW_ENVIRONMENT_LINUX=$CIBW_ENVIRONMENT_COMMON PIP_ONLY_BINARY='numpy'" >> $GITHUB_ENV
+          echo "CIBW_ENVIRONMENT_MACOS=$CIBW_ENVIRONMENT_COMMON MACOSX_DEPLOYMENT_TARGET=10.9 CMAKE_OSX_ARCHITECTURES=\"$CMAKE_OSX_ARCHITECTURES\"" >> $GITHUB_ENV
+          CIBW_BEFORE_ALL_COMMON="cmake -S . -B build_dependencies $CMAKE_ARCH && cmake --build build_dependencies --target praat -j 2"
+          echo "CIBW_BEFORE_ALL=$CIBW_BEFORE_ALL_COMMON" >> $GITHUB_ENV
+          echo "CIBW_BEFORE_ALL_LINUX=pip install cmake && ln -s \$(which cmake) /usr/local/bin/cmake && $CIBW_BEFORE_ALL_COMMON" >> $GITHUB_ENV
+          echo "CIBW_BEFORE_ALL_WINDOWS=$CIBW_BEFORE_ALL_COMMON --config Release" >> $GITHUB_ENV
+
+      - name: Run cibuildwheel
+        if: matrix.cibw-arch == 'manylinux_x86_64'
+        run: |
+          cibuildwheel
+
+      - name: Check built wheels
+        if: matrix.cibw-arch == 'manylinux_x86_64'
+        run: |
+          twine check wheelhouse/*

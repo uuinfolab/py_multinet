@@ -1,0 +1,16 @@
+# version 1.0
+
+- the multilayer network data structure has been re-implemented using multilayer cubes
+- actors must exist on at least one layer
+- removed actor Pucci from florentine data, not being present in any layer
+- added generate_communities, to create simple community structures
+- added flat_ec, flat_nw and mdlp clustering algorithms
+- added nmi and omega_index evaluation functions
+
+# version 0.10
+
+- new default: loops are allowed.
+
+# version 0.9
+
+- added project()
