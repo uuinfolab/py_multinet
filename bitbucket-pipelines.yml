@@ -12,7 +12,7 @@ pipelines:
           - python3 -m pip install wheel 
           - python3 -m pip install -U cibuildwheel
           - python3 -m pip install -U setuptools
-          - python setup.py sdist bdist_wheel
+          - python3 setup.py sdist bdist_wheel
     - step:
         name: 'Build wheels'
         script:
