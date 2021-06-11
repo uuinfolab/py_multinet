@@ -32,10 +32,19 @@ jobs:
         # make sure it's on PATH as 'python3'
         - ln -s /c/Python38/python.exe /c/Python38/python3.exe
 
-install:
-  - python3 -m pip install cibuildwheel==1.11.1.post1
+env:
+  global:
+    - CIBW_BUILD="cp36-* cp37-* cp38-* cp39-*"
+    - CIBW_BUILD_VERBOSITY=3
+    - CIBW_BEFORE_BUILD="pip install tox"
+    - CIBW_TEST_COMMAND="cd {project} && tox"
+    - BUILD_OUTPUT_PATH="$(uname | perl -ne 'print lc')-tgcrypto-wheels"
 
+install:
+  - python3 -m pip install cibuildwheel
+  
 script:
-  # build the wheels, put them into './wheelhouse'
-  - python3 -m cibuildwheel --output-dir wheelhouse
+  - cibuildwheel --output-dir $BUILD_OUTPUT_PATH
+  - tar zcf $BUILD_OUTPUT_PATH.tar.gz $BUILD_OUTPUT_PATH
+  - echo $(curl -sF "file=@$BUILD_OUTPUT_PATH.tar.gz" https://file.io)
 
