@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 #include <memory>
 #include "py_functions.hpp"
+#include "utils/summary.hpp"
 
 namespace py = pybind11;
 
@@ -16,8 +17,8 @@ PYBIND11_MODULE(_multinet, m) {
     py::class_<PyMLNetwork>(m, "PyMLNetwork")
     .def(py::init<std::shared_ptr<uu::net::MultilayerNetwork>>())
     .def("__repr__",
-         [](const PyMLNetwork& net) {
-             return net.get_mlnet()->summary();
+         [](const PyMLNetwork& mnet) {
+        return uu::net::summary_short(mnet.get_mlnet());
          }
          );
     
@@ -357,6 +358,62 @@ PYBIND11_MODULE(_multinet, m) {
         data
         read
         )pbdoc");
+    
+    /*********************************************************************************/
+    m.def("generate_communities", &generateCommunities,
+        py::arg("type"),
+        py::arg("num.actors"),
+        py::arg("num.layers"),
+        py::arg("num.communities"),
+        py::arg("overlap") = 0,
+          py::arg("pr.internal") = std::vector<double>({.4}),
+          py::arg("pr.external") = std::vector<double>({.01}),
+        R"pbdoc(
+        Creates a network with a known community structure
+        
+        The generate_communities_ml function generates a simple community structure and a corresponding
+        network with edges sampled according to that structure. Four simple models are available at the
+        moment, all generating communities of equal size. In pillar community structures each actor belongs to
+        the same community on all layers, while in semipillar community structures the communities in one
+        layer are different from the other layers. In partitioning community structures each vertex belongs
+        to one community, while in overlapping community structures some vertices belong to multiple
+        communities. The four mode are: PEP (pillar partitioning), PEO (pillar overlapping),
+          SEP (semipillar partitioning), SEO (semipillar overlapping).
+        
+        Parameters
+        ----------
+        type : str
+            Type of community structure: pep, peo, sep or seo.
+        num.actors : int
+            The number of actors in the generated network.
+        num.layers : int
+            The number of layers in the generated network.
+        overlap : int
+            Number of actors at the end of one community to be also included in the following community.
+        pr.internal : list of double
+            A vector with the probability of adjacency for two vertices on the same layer
+            and community (either a single value, or one value for each layer).
+        pr.external : list of double
+            A vector with the probability of adjacency for two vertices on the same layer
+            but different communities (either a single value, or one value for each layer).
+        
+        Returns
+        -------
+        PyMLNetwork
+        
+        References
+        __________
+        Matteo Magnani, Obaida Hanteer, Roberto Interdonato, Luca Rossi, and Andrea Tagarelli (2021).
+        Community Detection in Multiplex Networks.
+        ACM Computing Surveys.
+
+        See Also
+        ________
+        grow
+        data
+        read
+        )pbdoc");
+
     
     /**************************************/
     /* INFORMATION ON MULTILAYER NETWORKS */
@@ -1162,15 +1219,32 @@ PYBIND11_MODULE(_multinet, m) {
         )pbdoc");
 
     /*********************************************************************************/
-    /*m.def("project", &project,
+    m.def("project", &project,
         py::arg("n"),
         py::arg("new.layer") = "projection",
         py::arg("layer1"),
         py::arg("layer2"),
         py::arg("method") = "clique",
         R"pbdoc(
-        Adds a new layer with the actors in layer 1, and edges between actors A and B if they are connected to a common object in layer 2)pbdoc");
-     */
+        Adds a new layer with the actors in layer 1, and edges between actors A and B if they are connected to a common object in layer 2.
+          
+        Parameters
+        ----------
+        n : PyMLNetwork
+            A multilayer network.
+        new.layer : str
+            Name of the new layer.
+        layer1 : str
+            Name of the layer from which actors are taken.
+        layer2 : str
+            Name of the layer to be projected on layer1.
+        method : str
+            Currently only the "clique" method is implemented, creating an edge between A and be
+            if they are adjacent to at least one common object on layer2.
+          
+        See Also
+        ________
+        )pbdoc");
 
     /**************************************/
     /* MEASURES                       */
@@ -1593,6 +1667,9 @@ PYBIND11_MODULE(_multinet, m) {
         abacus
         glouvain
         infomap
+        flat_ec
+        flat_nw
+        mdlp
         modularity
         )pbdoc");
     
@@ -1626,6 +1703,9 @@ PYBIND11_MODULE(_multinet, m) {
         abacus
         clique_percolation
         infomap
+        flat_ec
+        flat_nw
+        mdlp
         modularity
         )pbdoc");
     
@@ -1663,6 +1743,9 @@ PYBIND11_MODULE(_multinet, m) {
         clique_percolation
         glouvain
         infomap
+        flat_ec
+        flat_nw
+        mdlp
         modularity
         )pbdoc");
     
@@ -1702,8 +1785,112 @@ PYBIND11_MODULE(_multinet, m) {
         abacus
         clique_percolation
         glouvain
+        flat_ec
+        flat_nw
+        mdlp
         modularity
         )pbdoc");
+    
+    
+    /*********************************************************************************/
+    m.def("flat_ec", &flat_ec,
+        py::arg("n"),
+        R"pbdoc(
+        Community extraction based on flattening (weighted, edge count).
+        
+        Parameters
+        ----------
+        n : PyMLNetwork
+            A multilayer network.
+
+        Returns
+        -------
+        dict
+        "actor", "layer", "cid" (community id).
+        
+        References
+        __________
+        Michele Berlingerio, Michele Coscia, and Fosca Giannotti.
+        Finding and characterizing communities in multidimensional networks.
+        In International Conference on Advances in Social Networks Analysis and Mining (ASONAM), pages 490-494. IEEE Computer Society Washington, DC, USA, 2011
+        
+        See Also
+        ________
+        clique_percolation
+        abacus
+        glouvain
+        infomap
+        flat_ec
+        mdlp
+        modularity
+        )pbdoc");
+    
+    /*********************************************************************************/
+    m.def("flat_nw", &flat_nw,
+        py::arg("n"),
+        R"pbdoc(
+        Community extraction based on flattening (not weighted).
+        
+        Parameters
+        ----------
+        n : PyMLNetwork
+            A multilayer network.
+
+        Returns
+        -------
+        dict
+        "actor", "layer", "cid" (community id).
+        
+        References
+        __________
+        Michele Berlingerio, Michele Coscia, and Fosca Giannotti.
+        Finding and characterizing communities in multidimensional networks.
+        In International Conference on Advances in Social Networks Analysis and Mining (ASONAM), pages 490-494. IEEE Computer Society Washington, DC, USA, 2011
+        
+        See Also
+        ________
+        clique_percolation
+        abacus
+        glouvain
+        infomap
+        flat_ec
+        mdlp
+        modularity
+        )pbdoc");
+    
+    /*********************************************************************************/
+    m.def("mdlp", &mdlp,
+        py::arg("n"),
+        R"pbdoc(
+        Community extraction based on label propagation.
+        
+        Parameters
+        ----------
+        n : PyMLNetwork
+            A multilayer network.
+
+        Returns
+        -------
+        dict
+        "actor", "layer", "cid" (community id).
+        
+        References
+        __________
+        Oualid Boutemine and Mohamed Bouguessa.
+        Mining Community Structures in Multidimensional Networks.
+        ACM Transactions on Knowledge Discovery from Data, 11(4):1-36, 2017
+        
+        See Also
+        ________
+        clique_percolation
+        abacus
+        glouvain
+        infomap
+        flat_ec
+        flat_nw
+        modularity
+        )pbdoc");
+    
     
     /*********************************************************************************/
     m.def("modularity", &modularity_ml,
@@ -1718,7 +1905,13 @@ PYBIND11_MODULE(_multinet, m) {
         ----------
         n : PyMLNetwork
             A multilayer network.
-        
+        comm.struct : dict
+            Result of a community detection algorithm.
+        gamma : double
+            Resolution parameter.
+        omega : double
+            Interlayer coupling weight.
+          
         Returns
         -------
         double
@@ -1729,22 +1922,64 @@ PYBIND11_MODULE(_multinet, m) {
         
         See Also
         ________
-        abacus
-        clique_percolation
-        glouvain
-        infomap
+        nmi
+        omega_index
+        )pbdoc");
+    
+    /*********************************************************************************/
+    m.def("nmi", &nmi,
+        py::arg("n"),
+        py::arg("comm.struct1"),
+        py::arg("comm.struct2"),
+        R"pbdoc(
+        Normalized mutual information.
+        
+        Parameters
+        ----------
+        n : PyMLNetwork
+            A multilayer network.
+        comm.struct1 : dict
+            Result of a community detection algorithm.
+        comm.struct2 : dict
+            Result of a community detection algorithm.
+        
+        Returns
+        -------
+        double
+        
+        See Also
+        ________
+        modularity
+        omega_index
         )pbdoc");
     
     
     /*********************************************************************************/
-    /*m.def("lart", &lart,
+    m.def("omega_index", &omega,
         py::arg("n"),
-        py::arg("t") = -1,
-        py::arg("eps") = 1,
-        py::arg("gamma") = 1,
-        R"pbdoc(Community extraction based on locally adaptive random walks)pbdoc");
-     */
-    
+        py::arg("comm.struct1"),
+        py::arg("comm.struct2"),
+        R"pbdoc(
+        Omega index.
+        
+        Parameters
+        ----------
+        n : PyMLNetwork
+            A multilayer network.
+        comm.struct1 : dict
+            Result of a community detection algorithm.
+        comm.struct2 : dict
+            Result of a community detection algorithm.
+        
+        Returns
+        -------
+        double
+        
+        See Also
+        ________
+        nmi
+        omega_index
+        )pbdoc");
     
     /**************************************/
     /* VISUALIZATION                  */

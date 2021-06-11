@@ -73,6 +73,17 @@ growMultiplex(
     const py::list& dependency
 );
 
+py::dict
+generateCommunities(
+     const std::string& type,
+     size_t num_actors,
+     size_t num_layers,
+     size_t num_communities,
+     size_t overlap,
+     const py::list& pr_internal,
+     const py::list& pr_external
+);
+
 // INFORMATION ON NETWORKS
 
 py::list
@@ -259,8 +270,6 @@ flatten(
     bool all_actors
 );
 
-
-/*
 void
 project(
     PyMLNetwork& rmnet,
@@ -269,8 +278,6 @@ project(
     const std::string& layer2,
     const std::string& method
  );
-*/
- 
  
 // MEASURES
 
@@ -376,6 +383,20 @@ infomap_ml(
            bool include_self_links
           );
 
+py::dict
+flat_ec(
+    const PyMLNetwork& mnet
+);
+
+py::dict
+flat_nw(
+    const PyMLNetwork& mnet
+);
+
+py::dict
+mdlp(
+     const PyMLNetwork& mnet
+);
 
 py::dict
 glouvain_ml(
@@ -391,6 +412,21 @@ abacus_ml(
     int min_actors,
     int min_layers
 );
+
+double
+nmi(
+    const PyMLNetwork& rmnet,
+    const py::dict& com1,
+    const py::dict& com2
+);
+
+double
+omega(
+    const PyMLNetwork& rmnet,
+    const py::dict& com1,
+    const py::dict& com2
+);
+
 
 double
 modularity_ml(

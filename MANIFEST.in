@@ -1,4 +1,2 @@
-include DESCRIPTION LICENSE uunet/data/*.mpx
-global-include CMakeLists.txt *.cmake
-recursive-include src *
-recursive-include pybind11/include *.h
+include DESCRIPTION LICENSE NEWS uunet/data/*.mpx
+global-include CMakeLists.txt VERSION *.cmake *.cpp *.hpp *.ipp *.c *.h
