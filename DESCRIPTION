@@ -1,3 +1,5 @@
 This is the python version of the _multinet_ library for the analysis of multilayer networks, first released for the R framework in January 2017 on CRAN.
 
 This library was originally based on the book: Multilayer Social Networks, by Dickison, Magnani & Rossi, Cambridge University Press (2016). The methods contained in the library and described in the book have been developed by many different authors: extensive references are available in the book, and in the documentation of each function we indicate the main reference we have followed for the implementation. For some methods developed after the book was published we give references to the corresponding literature. Additional information, including material such as survey articles and datasets, is available at http://multilayer.it.uu.se/.
+
+The package uses functions from eclat <https://borgelt.net/eclat.html>, for association rule mining, Infomap <https://www.mapequation.org>, for the Infomap community detection method, and Howard Hinnant's date and time library <https://github.com/HowardHinnant/date>. The code from these libraries has been included in our source package.

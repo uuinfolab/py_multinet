@@ -56,6 +56,7 @@ try:
     # creation
     empty,
     grow, evolution_pa, evolution_er,
+    generate_communities,
     # io
     read, write,
     # info
@@ -71,15 +72,15 @@ try:
     # attributes
     add_attributes, attributes, get_values, set_values,
     # transformation
-    flatten,
+    flatten, project,
     # measures
     degree, degree_deviation, neighborhood, xneighborhood, connective_redundancy,
     relevance, xrelevance,
     layer_summary, layer_comparison,
     distance,
     # clustering
-    clique_percolation, glouvain, abacus, infomap,
-    modularity,
+    clique_percolation, glouvain, abacus, infomap, flat_ec, flat_nw, mdlp,
+    modularity, nmi, omega_index,
     # visualization
     layout_multiforce, layout_circular,
     # networkx

@@ -1,11 +1,3 @@
-/*
- * r_functions.cpp
- *
- * Created on: Jun 19, 2014
- * Author: matteomagnani
- * Version: 0.0.1
- */
-
 // @todo check dict field existence
 
 #include <sstream>
@@ -13,11 +5,16 @@
 #include "pycpp_utils.hpp"
 
 #include "operations/union.hpp"
-#include "community/glouvain.hpp"
+#include "operations/project.hpp"
+#include "community/glouvain2.hpp"
 #include "community/abacus.hpp"
 #include "community/infomap.hpp"
-#include "community/ml-cpm.hpp"
+#include "community/flat.hpp"
+#include "community/mlp.hpp"
+#include "community/mlcpm.hpp"
 #include "community/modularity.hpp"
+#include "community/nmi.hpp"
+#include "community/omega_index.hpp"
 #include "io/read_multilayer_network.hpp"
 #include "io/write_multilayer_network.hpp"
 #include "measures/degree_ml.hpp"
@@ -26,10 +23,11 @@
 #include "measures/redundancy.hpp"
 #include "measures/layer.hpp"
 #include "measures/distance.hpp"
+#include "generation/communities.hpp"
 #include "generation/evolve.hpp"
-#include "generation/PAEvolutionModel.hpp"
-#include "generation/EREvolutionModel.hpp"
-#include "core/datastructures/propertymatrix/summarization.hpp"
+#include "generation/PAModel.hpp"
+#include "generation/ERModel.hpp"
+#include "core/propertymatrix/summarization.hpp"
 #include "layout/multiforce.hpp"
 #include "layout/circular.hpp"
 
@@ -50,7 +48,7 @@ PyMLNetwork
 readMultilayer(const std::string& input_file,
                const std::string& name, char sep, bool vertex_aligned)
 {
-    return PyMLNetwork(uu::net::read_attributed_homogeneous_multilayer_network(input_file,name,sep,vertex_aligned));
+    return PyMLNetwork(uu::net::read_multilayer_network(input_file,name,sep,vertex_aligned));
 }
 
 
@@ -70,7 +68,7 @@ writeMultilayer(
 
     if (format=="multilayer")
     {
-        write_attributed_homogeneous_multilayer_network(mnet,layers.begin(),layers.end(),output_file,sep);
+        write_multilayer_network(mnet,layers.begin(),layers.end(),output_file,sep);
     }
 
     else if (format=="graphml")
@@ -95,7 +93,7 @@ ba_evolution_model(
     size_t m
 )
 {
-    auto pa = std::make_shared<uu::net::PAEvolutionModel<uu::net::MultilayerNetwork>>(m0, m);
+    auto pa = std::make_shared<uu::net::PAModel<uu::net::MultilayerNetwork>>(m0, m);
 
     return PyEvolutionModel(pa,"Preferential attachment evolution model (" + std::to_string(m0) + "," + std::to_string(m) + ")");
 }
@@ -106,7 +104,7 @@ er_evolution_model(
     size_t n
 )
 {
-    auto er = std::make_shared<uu::net::EREvolutionModel<uu::net::MultilayerNetwork>>(n);
+    auto er = std::make_shared<uu::net::ERModel<uu::net::MultilayerNetwork>>(n);
 
     return PyEvolutionModel(er, "Uniform evolution model (" + std::to_string(n) + ")");
 }
@@ -189,25 +187,111 @@ growMultiplex(
 
     auto res = std::make_shared<uu::net::MultilayerNetwork>("synth");
 
-    for (size_t a=0; a<num_actors; a++)
-    {
-        res->actors()->add("a"+std::to_string(a));
-    }
-
     std::vector<std::string> layer_names;
 
     for (size_t l=0; l<num_layers; l++)
     {
         std::string layer_name = "l"+std::to_string(l);
-        auto layer = std::make_unique<uu::net::Network>(layer_name, uu::net::EdgeDir::UNDIRECTED, true);
-        res->layers()->add(std::move(layer));
+        //auto layer = std::make_unique<uu::net::Network>(layer_name, uu::net::EdgeDir::UNDIRECTED, true);
+        res->layers()->add(layer_name, uu::net::EdgeDir::UNDIRECTED, uu::net::LoopMode::ALLOWED);
         layer_names.push_back(layer_name);
     }
-
-    uu::net::evolve(res.get(), layer_names, pr_int, pr_ext, dep, models, num_of_steps);
+    
+    uu::net::evolve(res.get(), num_actors, layer_names, pr_int, pr_ext, dep, models, num_of_steps);
     
     return PyMLNetwork(res);
 }
+
+py::dict
+generateCommunities(
+     const std::string& type,
+     size_t num_actors,
+     size_t num_layers,
+     size_t num_communities,
+     size_t overlap,
+     const py::list& pr_internal,
+     const py::list& pr_external
+)
+{
+    // @todo wrap code to process vectors in a utility function
+    std::vector<double> pr_int(num_layers);
+    if (pr_internal.size() == 1)
+    {
+        for (size_t i=0; i<num_layers; i++)
+        {
+            pr_int[i] = pr_internal[0].cast<double>();
+        }
+    }
+    else if (pr_internal.size() == num_layers)
+    {
+        for (size_t i=0; i<num_layers; i++)
+        {
+            pr_int[i] = pr_internal[i].cast<double>();
+        }
+    }
+    else throw uu::core::WrongParameterException("wrong number of values in pr.internal");
+    
+    std::vector<double> pr_ext(num_layers);
+    if (pr_external.size() == 1)
+    {
+        for (size_t i=0; i<num_layers; i++)
+        {
+            pr_ext[i] = pr_external[0].cast<double>();
+        }
+    }
+    else if (pr_external.size() == num_layers)
+    {
+        for (size_t i=0; i<num_layers; i++)
+        {
+            pr_ext[i] = pr_external[i].cast<double>();
+        }
+    }
+    else throw uu::core::WrongParameterException("wrong number of values in pr.external");
+    
+    std::string uc_type = type;
+    uu::core::to_upper_case(uc_type);
+    
+    if (uc_type == "PEP")
+    {
+        if (overlap > 0)
+        {
+            py::print("[Warning] unused parameter: \"overlap\"");
+        }
+        auto pair = uu::net::generate_pep(num_layers, num_actors, num_communities, pr_int, pr_ext);
+        py::dict res;
+        res["net"]=PyMLNetwork(std::move(pair.first));
+        res["com"]=to_dataframe(pair.second.get());
+        return res;
+    }
+    else if (uc_type == "PEO")
+    {
+        auto pair = uu::net::generate_peo(num_layers, num_actors, num_communities, overlap, pr_int, pr_ext);
+        py::dict res;
+        res["net"]=PyMLNetwork(std::move(pair.first));
+        res["com"]=to_dataframe(pair.second.get());
+    }
+    else if (uc_type == "SEP")
+    {
+        if (overlap > 0)
+        {
+            py::print("[Warning] unused parameter: \"overlap\"");
+        }
+        auto pair = uu::net::generate_sep(num_layers, num_actors, num_communities, pr_int, pr_ext);
+        py::dict res;
+        res["net"]=PyMLNetwork(std::move(pair.first));
+        res["com"]=to_dataframe(pair.second.get());
+    }
+    else if (uc_type == "SEO")
+    {
+        auto pair = uu::net::generate_seo(num_layers, num_actors, num_communities, overlap, pr_int, pr_ext);
+        py::dict res;
+        res["net"]=PyMLNetwork(std::move(pair.first));
+        res["com"]=to_dataframe(pair.second.get());
+    }
+    else throw uu::core::WrongParameterException("wrong type parameter");
+    return py::dict();
+}
+
 
 // INFORMATION ON NETWORKS
 
@@ -325,17 +409,27 @@ edges_idx(
     }
 
     // interlayer
-    for (auto edge: *mnet->interlayer_edges())
+    for (auto l1: *mnet->layers())
     {
-        from.append(edge->l1->vertices()->index_of(edge->v1)+offset[edge->l1]+1);
-        to.append(edge->l2->vertices()->index_of(edge->v2)+offset[edge->l2]+1);
-        directed.append((edge->dir==uu::net::EdgeDir::DIRECTED)?1:0);
+        //num_edges += l1->edges()->size();
+        for (auto l2: *mnet->layers())
+        {
+            if (l2 <= l1) continue;
+            auto edges = mnet->interlayer_edges()->get(l1, l2);
+            if (!edges) continue;
+            for (auto edge: *edges)
+            {
+                from.append(l1->vertices()->index_of(edge->v1)+offset[l1]+1);
+                to.append(l2->vertices()->index_of(edge->v2)+offset[l2]+1);
+                directed.append((edge->dir==uu::net::EdgeDir::DIRECTED)?1:0);
+            }
+        }
     }
 
     py::dict res;
-                            res["from"] = from;
-                            res["to"] = to;
-                            res["dir"] = directed;
+    res["from"] = from;
+    res["to"] = to;
+    res["dir"] = directed;
     return res;
 }
 
@@ -387,12 +481,14 @@ edges(
 
             else
             {
-                for (auto edge: *mnet->interlayer_edges()->get(layer1,layer2))
+                auto edges = mnet->interlayer_edges()->get(layer1,layer2);
+                if (!edges) continue;
+                for (auto edge: *edges)
                 {
                     from_a.append(edge->v1->name);
-                    from_l.append(edge->l1->name);
+                    from_l.append(layer1->name);
                     to_a.append(edge->v2->name);
-                    to_l.append(edge->l2->name);
+                    to_l.append(layer2->name);
                     directed.append((edge->dir==uu::net::EdgeDir::DIRECTED)?true:false);
                 }
             }
@@ -503,22 +599,12 @@ numEdges(
 
             else
             {
+                if (!mnet->interlayer_edges()->get(layer1,layer2))
+                {
+                    continue;
+                }
                 num_edges += mnet->interlayer_edges()->get(layer1,layer2)->size();
             }
-
-        }
-    }
-
-    for (auto layer1: layers1)
-    {
-        for (auto layer2: layers2)
-        {
-            if (layer2<layer1)
-            {
-                continue;
-            }
-
-            num_edges += mnet->interlayer_edges()->get(layer1,layer2)->size();
 
         }
     }
@@ -562,6 +648,13 @@ isDirected(
             }
             else
             {
+                if (!mnet->interlayer_edges()->get(layer1,layer2))
+                {
+
+                    py::print("[Warning] interlayer edges between " + layer1->name + " and " + layer2->name +
+                    " not initialized");
+                    continue;
+                }
                 directed.append((mnet->interlayer_edges()->is_directed(layer1,layer2))?true:false);
             }
         }
@@ -653,8 +746,8 @@ addLayers(
         while (layer_iter != layer_names.end())
         {
             auto layer_name = (*layer_iter).cast<std::string>();
-            auto layer = std::make_unique<G>(layer_name, dir, true);
-            mnet->layers()->add(std::move(layer));
+            //auto layer = std::make_unique<G>(layer_name, dir, true);
+            mnet->layers()->add(layer_name, dir, uu::net::LoopMode::ALLOWED);
             ++layer_iter;
         }
     }
@@ -666,8 +759,7 @@ addLayers(
         while (layer_iter != layer_names.end())
         {
             auto layer_name = (*layer_iter).cast<std::string>();
-            auto layer = std::make_unique<G>(layer_name, dir, true);
-            mnet->layers()->add(std::move(layer));
+            mnet->layers()->add(layer_name, dir, uu::net::LoopMode::ALLOWED);
             ++layer_iter;
         }
     }
@@ -684,8 +776,8 @@ addLayers(
             bool directionality = (*dir_iter).cast<bool>();
             auto dir = (directionality)?uu::net::EdgeDir::DIRECTED:uu::net::EdgeDir::UNDIRECTED;
             auto layer_name = (*layer_iter).cast<std::string>();
-            auto layer = std::make_unique<G>(layer_name, dir, true);
-            mnet->layers()->add(std::move(layer));
+            //auto layer = std::make_unique<G>(layer_name, dir, true);
+            mnet->layers()->add(layer_name, dir, uu::net::LoopMode::ALLOWED);
             ++layer_iter;
             ++dir_iter;
         }
@@ -718,13 +810,13 @@ addNodes(
     py::list a = vertices["actor"].cast<py::list>();
     py::list l = vertices["layer"].cast<py::list>();
 
-    // New in v3.1: automatically add actors
+    /* From V4: actors are not added separately
     for (py::handle obj: a)
     {
         std::string actor_name = obj.attr("__str__")().cast<std::string>();
         mnet->actors()->add(actor_name);
     }
-    // weN
+    */
     
     auto actor_iter = a.begin();
     auto layer_iter = l.begin();
@@ -732,17 +824,27 @@ addNodes(
     {
         std::string actor_name = (*actor_iter).attr("__str__")().cast<std::string>();
         std::string layer_name = (*layer_iter).attr("__str__")().cast<std::string>();
-        
-        auto actor = mnet->actors()->get(actor_name);
-
+             
         auto layer = mnet->layers()->get(layer_name);
 
         if (!layer)
         {
-            throw std::runtime_error("cannot find layer " + layer_name);
+            auto dir = uu::net::EdgeDir::UNDIRECTED;
+            layer = mnet->layers()->add(layer_name, dir, uu::net::LoopMode::ALLOWED);
         }
-
-        layer->vertices()->add(actor);
+        
+        auto actor = mnet->actors()->get(actor_name);
+        
+        if (!actor)
+        {
+            layer->vertices()->add(actor_name);
+        }
+        else
+        {
+            layer->vertices()->add(actor);
+        }
+        
+        
         
         ++actor_iter;
         ++layer_iter;
@@ -762,7 +864,7 @@ addEdges(
     py::list l_to = edges["to_layer"].cast<py::list>();
 
     
-    // New in v3.2: automatically add actors
+    /*
     for (py::handle obj: a_from)
     {
         std::string actor_name = obj.attr("__str__")().cast<std::string>();
@@ -773,7 +875,7 @@ addEdges(
         std::string actor_name = obj.attr("__str__")().cast<std::string>();
         mnet->actors()->add(actor_name);
     }
-    // weN
+    */
     
     auto actor_from_iter = a_from.begin();
     auto layer_from_iter = l_from.begin();
@@ -787,28 +889,32 @@ addEdges(
         std::string actor_name2 = (*actor_to_iter).attr("__str__")().cast<std::string>();
         std::string layer_name2 = (*layer_to_iter).attr("__str__")().cast<std::string>();
         
-        auto actor1 = mnet->actors()->get(actor_name1);
-
-        auto actor2 = mnet->actors()->get(actor_name2);
-
         auto layer1 = mnet->layers()->get(layer_name1);
-
         if (!layer1)
         {
-            throw std::runtime_error("cannot find layer " + layer_name1);
+            auto dir = uu::net::EdgeDir::UNDIRECTED;
+            layer1 = mnet->layers()->add(layer_name1, dir, uu::net::LoopMode::ALLOWED);
         }
         
-        layer1->vertices()->add(actor1);
-
-        auto layer2 = mnet->layers()->get(layer_name2);
-
-        if (!layer2)
+        auto actor1 = layer1->vertices()->get(actor_name1);
+        if (!actor1)
         {
-            throw std::runtime_error("cannot find layer " + layer_name2);
+            actor1 = mnet->actors()->add(actor_name1);
         }
 
-        layer2->vertices()->add(actor2);
+        auto layer2 = mnet->layers()->get(layer_name2);
+        if (!layer2)
+        {
+            auto dir = uu::net::EdgeDir::UNDIRECTED;
+            layer2 = mnet->layers()->add(layer_name2, dir, uu::net::LoopMode::ALLOWED);
+        }
 
+        auto actor2 = layer2->vertices()->get(actor_name2);
+        if (!actor2)
+        {
+            actor2 = mnet->actors()->add(actor_name2);
+        }
+        
         if (layer1==layer2)
         {
             layer1->edges()->add(actor1, actor2);
@@ -816,6 +922,11 @@ addEdges(
 
         else
         {
+            if (!mnet->interlayer_edges()->get(layer1,layer2))
+            {
+                uu::net::EdgeDir dir = uu::net::EdgeDir::UNDIRECTED;
+                mnet->interlayer_edges()->init(layer1,layer2, dir);
+            }
             mnet->interlayer_edges()->add(actor1, layer1, actor2, layer2);
         }
         
@@ -868,7 +979,17 @@ setDirected(
         }
         else
         {
-            mnet->interlayer_edges()->set_directed(layer1, layer2, directed);
+            if (!mnet->interlayer_edges()->get(layer1,layer2))
+            {
+                uu::net::EdgeDir dir = directed?uu::net::EdgeDir::DIRECTED:uu::net::EdgeDir::UNDIRECTED;
+                mnet->interlayer_edges()->init(layer1,layer2, dir);
+            }
+            else
+            {
+                py::print("[Warning] cannot initialize existing pair of layers " +
+                layer1->name + " and " + layer2->name);
+                continue;
+            }
         }
         
         ++layer1_iter;
@@ -904,7 +1025,7 @@ deleteActors(
     {
         std::string actor_name = obj.attr("__str__")().cast<std::string>();
         auto actor = mnet->actors()->get(actor_name);
-        mnet->actors()->erase(actor);
+        if (actor) mnet->actors()->erase(actor);
     }
 }
 
@@ -947,8 +1068,8 @@ deleteEdges(
         }
         else
         {
-            auto e = mnet->interlayer_edges()->get(actor1, layer1, actor2, layer2);
-            mnet->interlayer_edges()->erase(e);
+            //auto e = mnet->interlayer_edges()->get(actor1, layer1, actor2, layer2);
+            mnet->interlayer_edges()->erase(actor1, layer1, actor2, layer2);
         }
     }
 }
@@ -1518,6 +1639,10 @@ setValues(
             case uu::core::AttributeType::TEXT:
             case uu::core::AttributeType::TIME:
             case uu::core::AttributeType::INTEGER:
+            case uu::core::AttributeType::INTEGERSET:
+            case uu::core::AttributeType::DOUBLESET:
+            case uu::core::AttributeType::STRINGSET:
+            case uu::core::AttributeType::TIMESET:
                 throw std::runtime_error("attribute type not supported: " + uu::core::to_string(att->type));
 
             }
@@ -1589,6 +1714,10 @@ setValues(
             case uu::core::AttributeType::TEXT:
             case uu::core::AttributeType::TIME:
             case uu::core::AttributeType::INTEGER:
+            case uu::core::AttributeType::INTEGERSET:
+            case uu::core::AttributeType::DOUBLESET:
+            case uu::core::AttributeType::STRINGSET:
+            case uu::core::AttributeType::TIMESET:
                 throw std::runtime_error("attribute type not supported: " + uu::core::to_string(att->type));
 
             }
@@ -1664,6 +1793,10 @@ setValues(
             case uu::core::AttributeType::TEXT:
             case uu::core::AttributeType::TIME:
             case uu::core::AttributeType::INTEGER:
+            case uu::core::AttributeType::INTEGERSET:
+            case uu::core::AttributeType::DOUBLESET:
+            case uu::core::AttributeType::STRINGSET:
+            case uu::core::AttributeType::TIMESET:
                 throw std::runtime_error("attribute type not supported: " + uu::core::to_string(att->type));
 
             }
@@ -1718,6 +1851,10 @@ setValues(
                     case uu::core::AttributeType::TEXT:
                     case uu::core::AttributeType::TIME:
                     case uu::core::AttributeType::INTEGER:
+                    case uu::core::AttributeType::INTEGERSET:
+                    case uu::core::AttributeType::DOUBLESET:
+                    case uu::core::AttributeType::STRINGSET:
+                    case uu::core::AttributeType::TIMESET:
                     throw std::runtime_error("attribute type not supported: " + uu::core::to_string(att->type));
                     
                 }
@@ -1771,11 +1908,9 @@ flatten(
     auto edge_directionality = directed?uu::net::EdgeDir::DIRECTED:uu::net::EdgeDir::UNDIRECTED;
 
 
-    auto new_layer = std::make_unique<G>(new_layer_name, edge_directionality, true);
-    new_layer->edges()->attr()->add("weight", uu::core::AttributeType::DOUBLE);
-
-    auto target = mnet->layers()->add(std::move(new_layer));
-
+    auto target = mnet->layers()->add(new_layer_name, edge_directionality, uu::net::LoopMode::ALLOWED);
+    target->edges()->attr()->add("weight", uu::core::AttributeType::DOUBLE);
+    
     if (method=="weighted")
     {
         uu::net::weighted_graph_union(layers.begin(),layers.end(),target,"weight");
@@ -1797,23 +1932,25 @@ flatten(
 }
 
 
-/*
 void project(
     PyMLNetwork& rmnet,
     const std::string& new_layer,
     const std::string& layer_name1,
     const std::string& layer_name2,
-    const std::string& method) {
+    const std::string& method)
+{
 auto mnet = rmnet.get_mlnet();
 auto layer1 = mnet->layers()->get(layer_name1);
 auto layer2 = mnet->layers()->get(layer_name2);
 if (!layer1 || !layer2)
     throw std::runtime_error("Layer not found");
-if (method=="clique")
-    project_unweighted(mnet,new_layer,layer1,layer2);
-else throw std::runtime_error("Unexpected value: algorithm");
+    if (method=="clique")
+    {
+        auto target_ptr = mnet->layers()->add(new_layer, uu::net::EdgeDir::UNDIRECTED, uu::net::LoopMode::ALLOWED);
+        uu::net::project_unweighted(mnet, layer1, layer2, target_ptr);
+    }
+    else throw std::runtime_error("Unexpected value: method");
 }
-*/
 
 // MEASURES
 
@@ -2774,7 +2911,7 @@ glouvain_ml(
 {
     auto mnet = rmnet.get_mlnet();
 
-    auto com_struct = uu::net::generalized_louvain<M,G>(mnet, gamma, omega, limit);
+    auto com_struct = uu::net::glouvain2<M>(mnet, omega);
 
     return to_dataframe(com_struct.get());
 }
@@ -2800,7 +2937,7 @@ infomap_ml(const PyMLNetwork& rmnet,
         py::print("Returning empty community set.");
     }
 
-    auto com_struct = std::make_unique<uu::net::CommunityStructure<uu::net::VertexLayerCommunity<const G>>>();
+    auto com_struct = std::make_unique<uu::net::CommunityStructure<uu::net::MultilayerNetwork>>();
     return to_dataframe(com_struct.get());
 }
 
@@ -2815,8 +2952,7 @@ abacus_ml(
 
     try
     {
-        auto pillar_com_struct = uu::net::abacus<M,G>(mnet, min_actors, min_layers);
-        auto com_struct = to_vertex_layer_community_structure(pillar_com_struct.get());
+        auto com_struct = uu::net::abacus(mnet, min_actors, min_layers);
         return to_dataframe(com_struct.get());
     }
 
@@ -2826,11 +2962,44 @@ abacus_ml(
         py::print("Returning empty community set.");
     }
 
-    auto pillar_com_struct = std::make_unique<uu::net::CommunityStructure<uu::net::PillarCommunity<const G>>>();
-    auto com_struct = to_vertex_layer_community_structure(pillar_com_struct.get());
+    auto com_struct = std::make_unique<uu::net::CommunityStructure<uu::net::MultilayerNetwork>>();
     return to_dataframe(com_struct.get());
 
 }
+
+py::dict
+flat_ec(
+    const PyMLNetwork& rmnet
+)
+{
+    auto mnet = rmnet.get_mlnet();
+
+    auto com_struct = uu::net::flat_ec(mnet);
+    return to_dataframe(com_struct.get());
+}
+
+py::dict
+flat_nw(
+    const PyMLNetwork& rmnet
+)
+{
+    auto mnet = rmnet.get_mlnet();
+
+    auto com_struct = uu::net::flat_nw(mnet);
+    return to_dataframe(com_struct.get());
+}
+
+py::dict
+mdlp(
+     const PyMLNetwork& rmnet
+)
+{
+    auto mnet = rmnet.get_mlnet();
+
+    auto com_struct = uu::net::mlp(mnet);
+    return to_dataframe(com_struct.get());
+}
+
 
 double
 modularity_ml(
@@ -2843,6 +3012,34 @@ modularity_ml(
     auto mnet = rmnet.get_mlnet();
     auto communities = to_communities(com, mnet);
     return uu::net::modularity(mnet, communities.get(), omega);
+}
+
+double
+nmi(
+    const PyMLNetwork& rmnet,
+    const py::dict& com1,
+    const py::dict& com2
+)
+{
+    size_t num_vertices = numNodes(rmnet, py::list());
+    auto mnet = rmnet.get_mlnet();
+    auto c1 = to_communities(com1, mnet);
+    auto c2 = to_communities(com2, mnet);
+    return uu::net::nmi(c1.get(), c2.get(), num_vertices);
+}
+
+double
+omega(
+    const PyMLNetwork& rmnet,
+    const py::dict& com1,
+    const py::dict& com2
+)
+{
+    size_t num_vertices = numNodes(rmnet, py::list());
+    auto mnet = rmnet.get_mlnet();
+    auto c1 = to_communities(com1, mnet);
+    auto c2 = to_communities(com2, mnet);
+    return uu::net::omega_index(c1.get(), c2.get(), num_vertices);
 }
 
 /*
@@ -3118,6 +3315,10 @@ toNetworkxEdgeDict(
                     case uu::core::AttributeType::TIME:
                     case uu::core::AttributeType::TEXT:
                     case uu::core::AttributeType::INTEGER:
+                    case uu::core::AttributeType::INTEGERSET:
+                    case uu::core::AttributeType::DOUBLESET:
+                    case uu::core::AttributeType::STRINGSET:
+                    case uu::core::AttributeType::TIMESET:
                         break;
                 }
             }
@@ -3162,6 +3363,10 @@ toNetworkxNodeDict(
                     case uu::core::AttributeType::TIME:
                     case uu::core::AttributeType::TEXT:
                     case uu::core::AttributeType::INTEGER:
+                    case uu::core::AttributeType::INTEGERSET:
+                    case uu::core::AttributeType::DOUBLESET:
+                    case uu::core::AttributeType::STRINGSET:
+                    case uu::core::AttributeType::TIMESET:
                         break;
                 }
             }
@@ -3184,6 +3389,10 @@ toNetworkxNodeDict(
                     case uu::core::AttributeType::TIME:
                     case uu::core::AttributeType::TEXT:
                     case uu::core::AttributeType::INTEGER:
+                    case uu::core::AttributeType::INTEGERSET:
+                    case uu::core::AttributeType::DOUBLESET:
+                    case uu::core::AttributeType::STRINGSET:
+                    case uu::core::AttributeType::TIMESET:
                         break;
                 }
             }

@@ -40,6 +40,17 @@ class CMakeBuild(build_ext):
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
 
+        # Pile all .so in one place and use $ORIGIN as RPATH // by Sergei Izmailov
+        cmake_args += ["-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE"]
+        #cmake_args += ['-DCMAKE_INSTALL_RPATH=' + extdir]
+        #cmake_args += ["-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE"]
+        #cmake_args += ["-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE"]
+        #cmake_args += ["-DCMAKE_BUILD_RPATH_USE_ORIGIN=TRUE"]
+        #cmake_args += ["-DCMAKE_INSTALL_RPATH={}".format("$ORIGIN")]
+        #cmake_args += ["-DCMAKE_BUILD_RPATH=miao"]
+        #cmake_args += ["-DCMAKE_INSTALL_RPATH=bau"]
+        #cmake_args += ["-DMACOSX_RPATH=OFF"]
+        
         if platform.system() == "Windows":
             cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
             if sys.maxsize > 2**32:
@@ -65,7 +76,7 @@ with open("DESCRIPTION", "r") as fh:
 try:
     setup(
     name='uunet',
-    version='0.1',
+    version='1.0.1',
     author='Matteo Magnani',
     author_email='matteo.magnani@it.uu.se',
     description='python porting of the R multinet library',
@@ -86,11 +97,11 @@ try:
         'networkx',
         'matplotlib',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     )
 except CalledProcessError:
     print('Failed to build extension!')
-    del kwargs['ext_modules']
-    setup(**kwargs)
+    #del kwargs['ext_modules']
+    #setup(**kwargs)
 
 
