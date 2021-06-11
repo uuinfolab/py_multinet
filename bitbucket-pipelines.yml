@@ -5,7 +5,15 @@ pipelines:
     - step:
         name: 'Install stuff'
         deployment: test
-        script:  
+        script: 
+          - uname -a
+          - apt-get update
+          - DEBIAN_FRONTEND=noninteractive
+          - apt-get install -y tzdata
+          - apt-get install build-essential -y --force-yes
+          - gcc --version
+          - apt-get install git cmake -y --force-yes
+          - cmake --version
           - apt-get update -y
           - apt-get install -y python3
           - apt-get install -y python3-pip
