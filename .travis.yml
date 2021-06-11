@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          submodules: recursive
+          submodules: recursive remote
 
       - name: Setup Python
         uses: actions/setup-python@v2
