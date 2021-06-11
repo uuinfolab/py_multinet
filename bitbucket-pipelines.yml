@@ -1,4 +1,4 @@
-image: python:3.7.2
+image: ubuntu
 
 pipelines:
   default:
@@ -6,6 +6,8 @@ pipelines:
         name: 'Install stuff'
         deployment: test
         script:  
+          - apt-get update -y
+          - apt-get install -y python3
           - python3 -m pip install wheel 
           - python3 -m pip install -U cibuildwheel
           - python3 -m pip install -U setuptools
