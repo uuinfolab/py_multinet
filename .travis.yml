@@ -48,7 +48,7 @@ jobs:
                 mingw-w64-x86_64-toolchain \
                 perl \
                 unzip
-        - taskkill //IM gpg-agent.exe //F
+#        - taskkill //IM gpg-agent.exe //F
         - export CPPFLAGS=-D__USE_MINGW_ANSI_STDIO=1
         - export PATH=/C/tools/msys64/mingw64/bin:$PATH
         - export GNU_MAKE=/C/tools/msys64/usr/bin/make
@@ -75,7 +75,7 @@ env:
 
 install:
   - pip install cython
-  - pip install cibuildwheel==2.0.0a2
+  - pip install cibuildwheel
   
 script:
   - cibuildwheel --output-dir $BUILD_OUTPUT_PATH
