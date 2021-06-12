@@ -29,6 +29,8 @@ jobs:
 
 env:
   global:
+    - TRAVIS_PYTHON_VERSION="3.8"
+    - CIBW_BUILD="cp38-*"
     - BUILD_OUTPUT_PATH="$(uname | perl -ne 'print lc')-uunet-wheels"
 
 install:
