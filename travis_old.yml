@@ -1,0 +1,89 @@
+os: linux
+dist: focal
+
+language: python
+
+jobs:
+  include:
+    # perform a linux build
+    - services: docker
+    - install:
+        - sudo apt remove --purge cmake
+        - hash -r
+        - sudo snap install cmake --classic
+        - pip install cibuildwheel=
+
+    # perform a linux ARMv8 build
+    - services: docker
+      arch: arm64
+
+    # perform a linux PPC64LE build
+    - services: docker
+      arch: ppc64le
+
+    # perform a linux S390X build
+    - services: docker
+      arch: s390x
+
+    # and a mac build
+    - os: osx
+      language: shell
+
+    # and a windows build
+    - os: windows
+      language: shell
+
+env:
+  global:
+    - TRAVIS_PYTHON_VERSION="3.8"
+    - CIBW_BUILD="cp38-*"
+    - CIBW_BUILD_VERBOSITY=3
+#    - CIBW_BEFORE_BUILD="pip install tox"
+#    - CIBW_TEST_COMMAND="cd {project} && tox"
+    - CIBW_SKIP="*-win32 *-manylinux_i686"
+    - MACOSX_DEPLOYMENT_TARGET="10.12"
+    - BUILD_OUTPUT_PATH="$(uname | perl -ne 'print lc')-uunet-wheels"
+
+
+install:
+  - pip install cython
+  - pip install cibuildwheel
+  
+before_install:
+  - |
+    if [ "$TRAVIS_OS_NAME" = "windows" ]; then
+      rm -rf C:/tools/msys64
+      choco uninstall -y mingw
+      choco upgrade --no-progress -y msys2 bazel
+      export msys2='cmd //C RefreshEnv.cmd '
+      export msys2+='& set MSYS=winsymlinks:nativestrict '
+      export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
+      export shell="$msys2 -mingw64 -full-path -here -c \$\* --"
+      export msys2+=" -msys2 -c \$\* --"
+      $msys2 pacman --sync --noconfirm --needed \
+            autoconf \
+            automake \
+            make \
+            mingw-w64-x86_64-libtool \
+            mingw-w64-x86_64-toolchain \
+            perl \
+            unzip
+      taskkill //IM gpg-agent.exe //F
+      export CPPFLAGS=-D__USE_MINGW_ANSI_STDIO=1
+      export PATH=/C/tools/msys64/mingw64/bin:$PATH
+      export GNU_MAKE=/C/tools/msys64/usr/bin/make
+      export MAKE=$GNU_MAKE
+      export AR=gcc-ar
+      export RANLIB=gcc-ranlib
+      export COVERITY_SCAN_BRANCH_PATTERN=disable_coverity_scan
+      choco upgrade python -y --version 3.8.6
+      export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
+    # make sure it's on PATH as 'python3'
+      ln -s /c/Python38/python.exe /c/Python38/python3.exe
+    fi
+    
+script:
+  - cibuildwheel --output-dir $BUILD_OUTPUT_PATH
+  - tar zcf $BUILD_OUTPUT_PATH.tar.gz $BUILD_OUTPUT_PATH
+#  - echo $(curl -sF "file=@$BUILD_OUTPUT_PATH.tar.gz" https://file.io)
+
