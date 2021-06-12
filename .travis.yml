@@ -28,13 +28,12 @@ jobs:
         - ln -s /c/Python38/python.exe /c/Python38/python3.exe
 
 env:
-global:
-  - BUILD_OUTPUT_PATH="$(uname | perl -ne 'print lc')-uunet-wheels"
+  global:
+    - BUILD_OUTPUT_PATH="$(uname | perl -ne 'print lc')-uunet-wheels"
 
 install:
   - python3 -m pip install cibuildwheel==2.0.0a2
 
 script:
   - cibuildwheel --output-dir $BUILD_OUTPUT_PATH
-  - echo $BUILD_OUTPUT_PATH
   - echo "OK"
