@@ -1,28 +1,29 @@
 language: python
+python:
+  - 3.8
 
 jobs:
   include:
     # perform a linux build
     - services: docker
-      python: 3.8
-      install:
-      - sudo apt-get remove cmake
+
     # perform a linux ARMv8 build
     - services: docker
       arch: arm64
-      python: 3.8
+
     # perform a linux PPC64LE build
     - services: docker
       arch: ppc64le
-      python: 3.8
+
     # perform a linux S390X build
     - services: docker
-      python: 3.8
       arch: s390x
+
     # and a mac build
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode11.2
       language: shell
+
     # and a windows build
     - os: windows
       language: shell
@@ -38,6 +39,8 @@ env:
     - CIBW_BUILD_VERBOSITY=3
 #    - CIBW_BEFORE_BUILD="pip install tox"
 #    - CIBW_TEST_COMMAND="cd {project} && tox"
+    - CIBW_SKIP="*-win32 *-manylinux_i686"
+    - MACOSX_DEPLOYMENT_TARGET="10.12"
     - BUILD_OUTPUT_PATH="$(uname | perl -ne 'print lc')-uunet-wheels"
 
 before_install:
