@@ -1,3 +1,6 @@
+os: linux
+dist: focal
+
 language: python
 
 jobs:
@@ -44,7 +47,7 @@ env:
 
 install:
   - pip install cython
-  - pip install cibuildwheel==1.11.1
+  - pip install cibuildwheel
   
 script:
   - cibuildwheel --output-dir $BUILD_OUTPUT_PATH
