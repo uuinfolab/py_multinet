@@ -19,7 +19,7 @@ jobs:
 
     # and a mac build
     - os: osx
-      osx_image: xcode11.2
+      osx_image: xcode12.5
       language: shell
       before_install:
         - brew list python3 &>/dev/null || brew install python3
