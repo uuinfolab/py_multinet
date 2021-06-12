@@ -47,7 +47,7 @@ env:
 
 install:
   - pip install cython
-  - pip install cibuildwheel
+  - pip install cibuildwheel==2.0.0a2
   
 script:
   - cibuildwheel --output-dir $BUILD_OUTPUT_PATH
