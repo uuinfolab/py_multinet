@@ -22,9 +22,8 @@ jobs:
     - os: windows
       language: shell
       before_install:
-#        - choco uninstall -y mingw
+        - choco upgrade -y mingw
 #        - choco upgrade visualstudio2017buildtools -y --version 15.9.18.0
-        - choco install windows-sdk-10.0
         - choco upgrade python -y --version 3.8.6
         - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
         # make sure it's on PATH as 'python3'
