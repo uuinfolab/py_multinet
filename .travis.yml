@@ -15,6 +15,9 @@ jobs:
     # perform a linux S390X build
     - services: docker
       arch: s390x
+    # and a mac build
+    - os: osx
+      language: shell
     # and a windows build
     - os: windows
       language: shell
@@ -26,3 +29,7 @@ jobs:
 
 install:
   - python3 -m pip install cibuildwheel==2.0.0a2
+
+script:
+#  - cibuildwheel --output-dir $BUILD_OUTPUT_PATH
+  - echo "OK"
