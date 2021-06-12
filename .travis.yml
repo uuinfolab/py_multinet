@@ -7,6 +7,10 @@ jobs:
   include:
     # perform a linux build
     - services: docker
+      before_install:
+        - sudo apt remove --purge cmake
+        - hash -r
+        - sudo snap install cmake --classic
 
     # perform a linux ARMv8 build
     - services: docker
@@ -28,6 +32,30 @@ jobs:
     - os: windows
       language: shell
       before_install:
+        [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
+        choco uninstall -y mingw
+        choco upgrade --no-progress -y msys2 bazel
+        export msys2='cmd //C RefreshEnv.cmd '
+        export msys2+='& set MSYS=winsymlinks:nativestrict '
+        export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
+        export shell="$msys2 -mingw64 -full-path -here -c \$\* --"
+        export msys2+=" -msys2 -c \$\* --"
+        $msys2 pacman --sync --noconfirm --needed \
+                autoconf \
+                automake \
+                make \
+                mingw-w64-x86_64-libtool \
+                mingw-w64-x86_64-toolchain \
+                perl \
+                unzip
+        taskkill //IM gpg-agent.exe //F
+        export CPPFLAGS=-D__USE_MINGW_ANSI_STDIO=1
+        export PATH=/C/tools/msys64/mingw64/bin:$PATH
+        export GNU_MAKE=/C/tools/msys64/usr/bin/make
+        export MAKE=$GNU_MAKE
+        export AR=gcc-ar
+        export RANLIB=gcc-ranlib
+        export COVERITY_SCAN_BRANCH_PATTERN=disable_coverity_scan
         - choco upgrade python -y --version 3.8.6
         - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
         # make sure it's on PATH as 'python3'
