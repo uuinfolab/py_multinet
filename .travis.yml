@@ -37,7 +37,7 @@ env:
 
 
 install:
-  - python3 -m pip install cibuildwheel==1.11.1
+  - python3 -m pip install cibuildwheel==1.11.0
 #2.0.0a2
 
 script:
