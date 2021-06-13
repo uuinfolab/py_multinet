@@ -87,3 +87,146 @@ script:
   - tar zcf $BUILD_OUTPUT_PATH.tar.gz $BUILD_OUTPUT_PATH
 #  - echo $(curl -sF "file=@$BUILD_OUTPUT_PATH.tar.gz" https://file.io)
 
+
+
+
+before_install:
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
+        choco uninstall -y mingw
+        choco upgrade --no-progress -y msys2
+        export msys2='cmd //C RefreshEnv.cmd '
+        export msys2+='& set MSYS=winsymlinks:nativestrict '
+        export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
+        export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
+        export msys2+=" -msys2 -c "\"\$@"\" --"
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-toolchain
+        ## Install more MSYS2 packages from https://packages.msys2.org/base here
+        taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
+        export PATH=/C/tools/msys64/mingw64/bin:$PATH
+        export MAKE=mingw32-make  # so that Autotools can find it
+        ;;
+    esac
+
+before_cache:
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        # https://unix.stackexchange.com/a/137322/107554
+        $msys2 pacman --sync --clean --noconfirm
+        ;;
+    esac
+
+cache:
+    directories:
+    - $HOME/AppData/Local/Temp/chocolatey
+    - /C/tools/msys64
+
+
+matrix:
+  os: [windows-latest, ubuntu-latest, macos-latest]
+  python: [38, 39]
+  bitness: [32, 64]
+  manylinux_image: [manylinux1, manylinux2010]
+  include:
+    # Run 32 and 64 bit version in parallel for Linux and Windows
+    - os: windows-latest
+      bitness: 64
+      platform_id: win_amd64
+    - os: windows-latest
+      bitness: 32
+      platform_id: win32
+    - os: ubuntu-latest
+      bitness: 64
+      platform_id: manylinux_x86_64
+    - os: ubuntu-latest
+      bitness: 32
+      platform_id: manylinux_i686
+    - os: macos-latest
+      bitness: 64
+      platform_id: macosx_x86_64
+  exclude:
+    - os: macos-latest
+      bitness: 32
+    # Remove manylinux1 from the windows and osx build matrix since
+    # manylinux_image is not used for these platforms
+    - os: windows-latest
+      manylinux_image: manylinux1
+    - os: macos-latest
+      manylinux_image: manylinux1
+
+
+
+
+  wheels:
+    name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        python: [38]
+        bitness: [32, 64]
+        include:
+          # Run 32 and 64 bit version in parallel for Linux and Windows
+          - os: windows-latest
+            bitness: 64
+            platform_id: win_amd64
+          - os: windows-latest
+            bitness: 32
+            platform_id: win32
+         # - os: ubuntu-latest
+         #   bitness: 64
+         #   platform_id: manylinux_x86_64
+         # - os: ubuntu-latest
+         #   bitness: 32
+         #   platform_id: manylinux_i686
+         # - os: macos-latest
+         #   bitness: 64
+         #   platform_id: macosx_x86_64
+        exclude:
+          - os: macos-latest
+            bitness: 32
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+#      - name: Setup Python
+#        uses: actions/setup-python@v2
+      
+#      - name: Setup CMake
+#        uses: jwlawson/actions-setup-cmake@v1.9
+#        with:
+#          cmake-version: '3.16.x'
+
+      - name: Install requirements
+        run: python -m pip install wheel cibuildwheel==2.0.0a2 twine
+              
+      - name: Build wheels
+        shell: bash
+        env:
+          #CONFTEST_PATH: ${{ github.workspace }}/conftest.py
+          #CONFTEST_NAME: conftest.py
+          CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13 PATH=$PATH:C:\msys64\mingw64\bin
+          CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
+          CMAKE_ARCH: ${{ matrix.cibw-arch == 'win32' && '-A Win32' || '' }}
+          #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: bash build_tools/github/repair_windows_wheels.sh {wheel} {dest_dir} ${{ matrix.bitness }}
+          #CIBW_BEFORE_TEST_WINDOWS: bash build_tools/github/build_minimal_windows_image.sh ${{ matrix.python }} ${{ matrix.bitness }}
+          #CIBW_TEST_REQUIRES: pytest pandas threadpoolctl
+          #CIBW_TEST_COMMAND: bash {project}/build_tools/github/test_wheels.sh
+          #CIBW_TEST_COMMAND_WINDOWS: bash {project}/build_tools/github/test_windows_wheels.sh ${{ matrix.python }} ${{ matrix.bitness }}
+          CIBW_BEFORE_ALL_LINUX: pip install cmake && ln -s $(which cmake) /usr/local/bin/cmake
+          #CIBW_BEFORE_ALL: cmake -S . -B build_dependencies  && cmake --build build_dependencies --target uunet -j 2 --config Release
+          CIBW_BUILD_VERBOSITY: 3
+        run: |
+          python -m cibuildwheel --output-dir wheelhouse
+          
+      #- name: Check built wheels
+      #  if: matrix.cibw-arch == 'manylinux_x86_64'
+      #  run: |
+      #    twine check wheelhouse/*
