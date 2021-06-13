@@ -24,7 +24,7 @@ add_subdirectory(ext/uunet)
 file (GLOB_RECURSE SOURCES C++/*cpp)
 
 pybind11_add_module(_multinet MODULE ${SOURCES})
-target_link_libraries(_multinet PUBLIC uunet)
+target_link_libraries(_multinet PRIVATE uunet)
 
 target_include_directories (_multinet PRIVATE
 ext/uunet/ext/eigen3
