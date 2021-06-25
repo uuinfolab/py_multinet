@@ -269,6 +269,7 @@ generateCommunities(
         py::dict res;
         res["net"]=PyMLNetwork(std::move(pair.first));
         res["com"]=to_dataframe(pair.second.get());
+        return res;
     }
     else if (uc_type == "SEP")
     {
@@ -280,6 +281,7 @@ generateCommunities(
         py::dict res;
         res["net"]=PyMLNetwork(std::move(pair.first));
         res["com"]=to_dataframe(pair.second.get());
+        return res;
     }
     else if (uc_type == "SEO")
     {
@@ -287,6 +289,7 @@ generateCommunities(
         py::dict res;
         res["net"]=PyMLNetwork(std::move(pair.first));
         res["com"]=to_dataframe(pair.second.get());
+        return res;
     }
     else throw uu::core::WrongParameterException("wrong type parameter");
     return py::dict();

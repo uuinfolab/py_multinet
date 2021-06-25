@@ -20,6 +20,11 @@ Install
 Install the latest version of uunet:
 
     $ pip install uunet
+    
+Notes:
+
+- Python >= 3.8 is required
+- The package is not compatible with conda
 
 Credits
 -------

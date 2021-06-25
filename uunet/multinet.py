@@ -302,14 +302,14 @@ def values2graphics(values, output = ["c"], shape_size=7):
     res = dict()
     types = list(set(values))
     num_types = len(types)
+    if (num_types > 12):
+        raise RuntimeError("only 12 distinct values supported")
     colors = ['black']*12
     if "c" in output:
-        colors = plt.get_cmap("Set1").colors
+        colors = plt.get_cmap("Paired").colors
     markers = ["s"]*12
     if "s" in output:
         markers = ["o","s","v","^","D","p","X","*","P",">","<","H"]
-    if (num_types > 12):
-        raise RuntimeError("only 12 distinct values supported")
     res["legend"] = []
     for i in range(num_types):
         h = mlines.Line2D([], [], color=colors[i], marker=markers[i], linestyle='None', markersize=shape_size, label=types[i])
