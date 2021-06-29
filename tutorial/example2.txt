@@ -1,0 +1,32 @@
+#VERSION
+3.0
+
+#TYPE
+multiplex
+
+#LAYERS
+research, UNDIRECTED
+twitter, DIRECTED
+
+#ACTOR ATTRIBUTES
+affiliation,STRING
+
+#VERTEX ATTRIBUTES
+twitter, num_tweets, NUMERIC
+
+#EDGE ATTRIBUTES 
+research, num_publications, NUMERIC
+
+#ACTORS 
+Luca,ITU
+Matteo,UU
+Davide,UU
+
+#VERTICES 
+Luca,twitter,53
+Matteo,twitter,13
+
+#EDGES 
+Luca,Matteo,research,9
+Davide,Matteo,research,7
+Luca,Matteo,twitter

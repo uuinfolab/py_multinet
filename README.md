@@ -8,14 +8,18 @@ This library was originally based on the book: Multilayer Social Networks, by Di
 
 ## Requirements
 
-* python3
-* The following packages installed: networkx, pkgutil, os, matplotlib, itertools, functools.
+* python >= 3.8
 
 ## Installation
 
-pip install uunet
+    pip install uunet
 
 (this provides the module: uunet.multinet)
+
+## Usage
+
+In the directory `tutorial/` you find example code covering most of the functions in the library. Documentation
+for all functions can be obtained from Python using `help()`.
 
 ## Contact
 

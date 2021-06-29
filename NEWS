@@ -1,3 +1,7 @@
+# version 1.1.2
+
+- values2graphics supports up to 12 distinct values (not included in previous version)
+
 # version 1.1.1
 
 - values2graphics supports up to 12 distinct values
