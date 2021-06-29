@@ -38,7 +38,7 @@ And you should see: Version: 1.1.2. Then you can run:
     ipython kernel install --name "multinet" --user
     jupyter-notebook
 
-from this directory.
+from this directory. When you open the notebook you should choose the kernel called `multinet`.
 
 Please notice that:
 
