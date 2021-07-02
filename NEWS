@@ -1,3 +1,8 @@
+# version 1.1.3
+
+- fixed bug on get_values when applied to edges (did not return the values)
+- updated license
+
 # version 1.1.2
 
 - values2graphics supports up to 12 distinct values (not included in previous version)

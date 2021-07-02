@@ -77,7 +77,7 @@ with open("DESCRIPTION", "r") as fh:
 try:
     setup(
     name='uunet',
-    version='1.1.2',
+    version='1.1.3',
     author='Matteo Magnani',
     author_email='matteo.magnani@it.uu.se',
     description='python porting of the R multinet library',
@@ -91,7 +91,7 @@ try:
     include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: EUPL v1.2",
+        "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
         "Operating System :: OS Independent",
     ],
     install_requires=[

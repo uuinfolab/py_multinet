@@ -1520,9 +1520,7 @@ getValues(
                     value.append(attributes->get_double(e, attribute_name).value);
                 }
             }
-            py::dict res;
-            res["value"] = value;
-            return res;
+            return value;
         }
 
         else if (attribute_type == uu::core::AttributeType::STRING)
@@ -1548,9 +1546,7 @@ getValues(
                     value.append(attributes->get_string(e, attribute_name).value);
                 }
             }
-            py::dict res;
-            res["value"] = value;
-            return res;
+            return value;
         }
 
         else
@@ -1565,7 +1561,7 @@ getValues(
     }
 
     // Never gets here
-    return py::dict();
+    return py::list();
 }
 
 void
