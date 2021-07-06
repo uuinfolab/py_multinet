@@ -389,11 +389,11 @@ edges_idx(
     py::list from, to, directed;
 
     // stores at which index vertices start in a layer
-    std::unordered_map<const G*, size_t> offset;
+    std::unordered_map<const uu::net::VCube*, size_t> offset;
     size_t num_vertices = 0;
     for (auto layer: *mnet->layers())
     {
-        offset[layer] = num_vertices;
+        offset[layer->vertices()] = num_vertices;
         num_vertices += layer->vertices()->size();
     }
     
@@ -405,8 +405,8 @@ edges_idx(
 
         for (auto edge: *l->edges())
         {
-            from.append(vertices->index_of(edge->v1)+offset[l]+1);
-            to.append(vertices->index_of(edge->v2)+offset[l]+1);
+            from.append(vertices->index_of(edge->v1)+offset[edge->c1]+1);
+            to.append(vertices->index_of(edge->v2)+offset[edge->c2]+1);
             directed.append((edge->dir==uu::net::EdgeDir::DIRECTED)?1:0);
         }
     }
@@ -422,8 +422,8 @@ edges_idx(
             if (!edges) continue;
             for (auto edge: *edges)
             {
-                from.append(l1->vertices()->index_of(edge->v1)+offset[l1]+1);
-                to.append(l2->vertices()->index_of(edge->v2)+offset[l2]+1);
+                from.append(edge->c1->index_of(edge->v1)+offset[edge->c1]+1);
+                to.append(edge->c2->index_of(edge->v2)+offset[edge->c2]+1);
                 directed.append((edge->dir==uu::net::EdgeDir::DIRECTED)?1:0);
             }
         }
@@ -489,9 +489,9 @@ edges(
                 for (auto edge: *edges)
                 {
                     from_a.append(edge->v1->name);
-                    from_l.append(layer1->name);
+                    from_l.append(edge->c1->name);
                     to_a.append(edge->v2->name);
-                    to_l.append(layer2->name);
+                    to_l.append(edge->c2->name);
                     directed.append((edge->dir==uu::net::EdgeDir::DIRECTED)?true:false);
                 }
             }
