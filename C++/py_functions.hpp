@@ -91,23 +91,26 @@ layers(
     const PyMLNetwork& mnet
 );
 
-py::list
+py::dict
 actors(
     const PyMLNetwork& mnet,
-    const py::list& layer_names
+    const py::list& layer_names,
+    bool add_attributes = false
 );
 
 py::dict
 vertices(
     const PyMLNetwork& mnet,
-    const py::list& layer_names
+    const py::list& layer_names,
+    bool add_attributes = false
 );
 
 py::dict
 edges(
     const PyMLNetwork& mnet,
     const py::list& layer_names1,
-    const py::list& layer_names2
+    const py::list& layer_names2,
+    bool add_attributes = false
 );
 
 py::dict
@@ -131,6 +134,7 @@ numNodes(
     const PyMLNetwork& mnet,
     const py::list& layers
 );
+
 size_t
 numEdges(
     const PyMLNetwork& mnet,
@@ -237,11 +241,11 @@ getAttributes(
     const std::string& target
 );
 
-py::list
+py::dict
 getValues(
-    PyMLNetwork& rmnet,
+    const PyMLNetwork& rmnet,
     const std::string& attribute_name,
-    const py::list& actor_names,
+    const py::dict& actor_names,
     const py::dict& vertex_matrix,
     const py::dict& edge_matrix
 );
@@ -251,7 +255,7 @@ void
 setValues(
     PyMLNetwork& rmnet,
     const std::string& attribute_name,
-    const py::list& actor_names,
+    const py::dict& actor_names,
     const py::dict& vertex_matrix,
     const py::dict& edge_matrix,
     const py::list& values
@@ -401,9 +405,7 @@ mdlp(
 py::dict
 glouvain_ml(
     const PyMLNetwork&,
-    double gamma,
-    double omega,
-    int limit
+    double omega
 );
 
 py::dict

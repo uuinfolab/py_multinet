@@ -444,6 +444,7 @@ PYBIND11_MODULE(_multinet, m) {
     m.def("actors", &actors,
         py::arg("n"),
         py::arg("layers") = py::list(),
+        py::arg("add_attributes") = false,
         R"pbdoc(
         Returns the list of actors present in the input layers, or in the whole multilayer network if no layers are specified.
         
@@ -451,20 +452,29 @@ PYBIND11_MODULE(_multinet, m) {
         ----------
         n : PyMLNetwork
             A multilayer network.
+        layers :
+            A list of names of layers belonging to the network. Only the actors in these
+            layers are returned. If the array is empty, all the actors in the network are
+            returned.
+        add_attributes :
+            If true, actor attribute values are added to the result.
+        
         
         Returns
         -------
-        list
-          A list of actor names.
+        dict
+          A dictionary with a list of actor names ("actor").
         
         See Also
         ________
+        vertices, edges, layers
         )pbdoc");
     
     /*********************************************************************************/
     m.def("vertices", &vertices,
-         py::arg("n"),
+        py::arg("n"),
         py::arg("layers") = py::list(),
+        py::arg("add_attributes") = false,
         R"pbdoc(
         Returns the list of vertices in the input layers, or in the whole multilayer network if no layers are specified.
         
@@ -473,11 +483,11 @@ PYBIND11_MODULE(_multinet, m) {
         n : PyMLNetwork
             A multilayer network.
         layers :
-            A list of names of layers belonging to the network. Only the actors/vertices in these
+            A list of names of layers belonging to the network. Only the vertices in these
             layers are returned. If the array is empty, all the vertices in the network are
-            returned. Notice that this may not correspond to the list of actors: there can be
-            actors that are not present in any layer. These would be returned only using the
-            actors() function.
+            returned.
+        add_attributes :
+            If true, attribute values are added to the result.
         
         Returns
         -------
@@ -490,9 +500,10 @@ PYBIND11_MODULE(_multinet, m) {
     
     /*********************************************************************************/
     m.def("edges", &edges,
-         py::arg("n"),
+        py::arg("n"),
         py::arg("layers1") = py::list(),
         py::arg("layers2") = py::list(),
+        py::arg("add_attributes") = false,
         R"pbdoc(
         Returns the list of edges among vertices in the input layers (if only one set of layers
         is specified), or from the first set of input layers to the second set of input layers,
@@ -508,6 +519,8 @@ PYBIND11_MODULE(_multinet, m) {
         layers2 : list of str
             The layer(s) where the edges to be extracted end. If an empty list of layers is
             passed (default), the ending layers are set as equal to those in parameter layer1.
+        add_attributes :
+            If true, actor attribute values are added to the result.
         
         Returns
         -------
@@ -1109,7 +1122,7 @@ PYBIND11_MODULE(_multinet, m) {
     m.def("get_values", &getValues,
         py::arg("n"),
         py::arg("attribute"),
-        py::arg("actors") = py::list(),
+        py::arg("actors") = py::dict(),
         py::arg("vertices") = py::dict(),
         py::arg("edges") = py::dict(),
         R"pbdoc(
@@ -1121,8 +1134,8 @@ PYBIND11_MODULE(_multinet, m) {
             A multilayer network.
         attribute : str
             The name of the attribute to be updated.
-        actors : list of str
-            A vector of actor names. If this is specified, layers, vertices and edges should not.
+        actors : dict
+            A dictionary containing a list of actor names called "actor". If this is specified, layers, vertices and edges should not.
         vertices : dict
             Vertices to be updated. The first column specifies actor names,
             the second layer names. If this is specified, actors, layers and edges should not.
@@ -1146,7 +1159,7 @@ PYBIND11_MODULE(_multinet, m) {
     m.def("set_values", &setValues,
         py::arg("n"),
         py::arg("attribute"),
-        py::arg("actors") = py::list(),
+        py::arg("actors") = py::dict(),
         py::arg("vertices") = py::dict(),
         py::arg("edges") = py::dict(),
         py::arg("values"),
@@ -1676,9 +1689,7 @@ PYBIND11_MODULE(_multinet, m) {
     /*********************************************************************************/
     m.def("glouvain", &glouvain_ml,
         py::arg("n"),
-        py::arg("gamma") = 1.0,
         py::arg("omega") = 1.0,
-        py::arg("limit") = 0,
         R"pbdoc(
         Extension of the louvain method.
         
@@ -1754,7 +1765,7 @@ PYBIND11_MODULE(_multinet, m) {
         py::arg("n"),
         py::arg("overlapping") = false,
         py::arg("directed") = false,
-        py::arg("self.links") = true,
+        py::arg("self_links") = true,
         R"pbdoc(
         Community extraction based on the flow equation.
         

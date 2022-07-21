@@ -1,6 +1,7 @@
 // @todo check dict field existence
 
 #include <sstream>
+#include <limits>
 #include "py_functions.hpp"
 #include "pycpp_utils.hpp"
 
@@ -311,10 +312,11 @@ layers(
     return res;
 }
 
-py::list
+py::dict
 actors(
     const PyMLNetwork& rmnet,
-    const py::list& layer_names
+    const py::list& layer_names,
+    bool add_attributes
 )
 {
     py::list actors;
@@ -341,28 +343,43 @@ actors(
         }
     }
 
-    //for (auto actor: actors)
-    //  res.append(actor->name);
-    return actors;
+    py::dict res;
+    res["actor"] = actors;
+    
+    if (add_attributes)
+    {
+        auto attrs = mnet->actors()->attr();
+        for (auto attr: *attrs)
+        {
+            if (attr->name == "actor")
+            {
+                throw std::runtime_error("attribute name \"actor\" already present in the dictionary");
+            }
+            auto values = getValues(rmnet, attr->name, res, py::dict(), py::dict());
+            res[pybind11::cast(attr->name)] = values[pybind11::cast(attr->name)];
+        }
+    }
+    return res;
 }
 
 py::dict
 vertices(
     const PyMLNetwork& rmnet,
-    const py::list& layer_names
+    const py::list& layer_names,
+    bool add_attributes
 )
 {
     auto mnet = rmnet.get_mlnet();
     auto layers = resolve_layers_unordered(mnet,layer_names);
     py::list actor, layer;
 
-    for (auto l: *mnet->layers())
+    for (auto l: layers)
     {
 
-        if (layers.count(l)==0)
+        /*if (layers.count(l)==0)
         {
             continue;
-        }
+        }*/
 
         for (auto vertex: *l->vertices())
         {
@@ -374,6 +391,46 @@ vertices(
     py::dict res;
     res["actor"] = actor;
     res["layer"] = layer;
+    
+    if (add_attributes)
+    {
+        // Adding actor attributes
+        auto attrs = mnet->actors()->attr();
+        for (auto attr: *attrs)
+        {
+            if (attr->name == "actor")
+            {
+                throw std::runtime_error("attribute name \"actor\" already present in the dictionary");
+            }
+            if (attr->name == "layer")
+            {
+                throw std::runtime_error("attribute name \"layer\" already present in the dictionary");
+            }
+            auto values = getValues(rmnet, attr->name, res, py::dict(), py::dict());
+            res[pybind11::cast(attr->name)] = values[pybind11::cast(attr->name)];
+        }
+        // Adding vertex (that is, layer-specific) attributes
+        for (auto l: layers)
+        {
+            auto attrs = l->vertices()->attr();
+            for (auto attr: *attrs)
+            {
+                if (attr->name == "actor")
+                {
+                    throw std::runtime_error("attribute name \"actor\" already present in the dictionary");
+                }
+                if (attr->name == "layer")
+                {
+                    throw std::runtime_error("attribute name \"layer\" already present in the dictionary");
+                }
+                auto values = getValues(rmnet, attr->name, py::dict(), res, py::dict());
+                for (auto item : values)
+                {
+                    res[item.first] = item.second;
+                }
+            }
+        }
+    }
     return res;
 }
 
@@ -437,7 +494,8 @@ py::dict
 edges(
     const PyMLNetwork& rmnet,
     const py::list& layer_names1,
-    const py::list& layer_names2
+    const py::list& layer_names2,
+    bool add_attributes
 )
 {
     auto mnet = rmnet.get_mlnet();
@@ -501,6 +559,22 @@ edges(
     res["to_actor"] = to_a;
     res["to_layer"] = to_l;
     res["dir"] = directed;
+    
+    if (add_attributes)
+    {
+        auto attributes = getAttributes(rmnet, "edge");
+        std::set<std::string> attrs;
+        for (auto a: attributes["name"])
+        {
+            attrs.insert(std::string(py::str(a)));
+        }
+        for (auto attr: attrs)
+        {
+            auto values = getValues(rmnet, attr, py::dict(), py::dict(), res);
+            res[pybind11::cast(attr)] = values[pybind11::cast(attr)];
+        }
+    }
+    
     return res;
 }
 
@@ -1306,11 +1380,11 @@ getAttributes(
 }
 
 
-py::list
+py::dict
 getValues(
-    PyMLNetwork& rmnet,
+    const PyMLNetwork& rmnet,
     const std::string& attribute_name,
-    const py::list& actor_names,
+    const py::dict& actor_names,
     const py::dict& vertex_matrix,
     const py::dict& edge_matrix
 )
@@ -1329,7 +1403,7 @@ getValues(
             py::print("[Warning] unused parameter: \"edges\"");
         }
 
-        auto actors = resolve_actors(mnet,actor_names);
+        auto actors = resolve_actors(mnet,actor_names["actor"]);
         auto attributes = mnet->actors()->attr();
         auto att = attributes->get(attribute_name);
 
@@ -1346,8 +1420,9 @@ getValues(
             {
                 value.append(attributes->get_double(actor,att->name).value);
             }
-
-            return value;
+            py::dict res;
+            res[pybind11::cast(att->name)] = value;
+            return res;
         }
 
         else if (att->type==uu::core::AttributeType::STRING)
@@ -1358,8 +1433,9 @@ getValues(
             {
                 value.append(attributes->get_string(actor,att->name).value);
             }
-
-            return value;
+            py::dict res;
+            res[pybind11::cast(att->name)] = value;
+            return res;
         }
 
         else
@@ -1379,79 +1455,83 @@ getValues(
 
         auto vertices = resolve_vertices(mnet,vertex_matrix);
 
-        // Check if the attribute is available for all layers
-        const uu::core::Attribute* att;
-        std::set<const G*> layers;
-        std::set<uu::core::AttributeType> types;
-        for (auto vertex: vertices)
+        for (auto layer: *mnet->layers())
         {
-            auto layer = vertex.second;
-            layers.insert(layer);
-        }
-        for (auto layer: layers)
-        {
-            auto attributes = layer->vertices()->attr();
-            att = attributes->get(attribute_name);
-            if (!att)
+            std::string layer_name = layer->name;
+            
+            auto attrs = layer->vertices()->attr();
+            for (auto attr: *attrs)
             {
-                throw std::runtime_error("cannot find attribute: " + attribute_name + " for vertices on layer " + layer->name);
-            }
-            types.insert(att->type);
-        }
-        if (types.size() > 1)
-        {
-            throw std::runtime_error("different attribute types on different layers");
-        }
+                if (attr->name != attribute_name) continue;
+                std::string local_att_name = layer_name + ":" + attribute_name;
         
-        auto attribute_type = *types.begin();
-        
-        if (attribute_type==uu::core::AttributeType::DOUBLE)
-        {
-            py::list value;
-            
-            for (auto vertex: vertices)
-            {
-                
-                auto layer = vertex.second;
-                auto attributes = layer->vertices()->attr();
+                if (attr->type==uu::core::AttributeType::DOUBLE)
+                {
+                    py::list value;
+                    
+                    for (auto vertex: vertices)
+                    {
+                        auto actor = vertex.first;
+                        auto l = vertex.second;
+                        auto attributes = layer->vertices()->attr();
 
-            value.append(attributes->get_double(vertex.first,attribute_name).value);
-            
-            }
-            
-            return value;
-        }
+                        if (layer != l)
+                        {
+                            value.append(std::numeric_limits<double>::quiet_NaN());
+                        }
+                        else
+                        {
+                            auto att_val = attrs->get_double(actor, attr->name);
+                            if (att_val.null) value.append(std::numeric_limits<double>::quiet_NaN());
+                            else value.append(att_val.value);
+                        }
+                    
+                    }
+                    py::dict res;
+                    res[pybind11::cast(local_att_name)] = value;
+                    return res;
+                }
 
-        else if (attribute_type == uu::core::AttributeType::STRING)
-        {
-            py::list value;
-            
-            for (auto vertex: vertices)
-            {
-                
-                auto layer = vertex.second;
-                auto attributes = layer->vertices()->attr();
-                
-                value.append(attributes->get_string(vertex.first,attribute_name).value);
-                
-            }
-            
-            return value;
-        }
-        
-        else
-        {
-            throw std::runtime_error("attribute type not supported: " + uu::core::to_string(attribute_type));
-        }
-        
+                else if (attr->type == uu::core::AttributeType::STRING)
+                {
+                    py::list value;
+                    
+                    for (auto vertex: vertices)
+                    {
+                        auto actor = vertex.first;
+                        auto l = vertex.second;
+                        auto attributes = layer->vertices()->attr();
 
+                        if (layer != l)
+                        {
+                            value.append("");
+                        }
+                        else
+                        {
+                            auto att_val = attrs->get_string(actor, attr->name);
+                            if (att_val.null) value.append("");
+                            else value.append(att_val.value);
+                        }
+                    }
+                    
+                    py::dict res;
+                    res[pybind11::cast(local_att_name)] = value;
+                    return res;
+                }
+                
+                else
+                {
+                    throw std::runtime_error("attribute type not supported: " + uu::core::to_string(attr->type));
+                }
+            }
+        }
     }
 
     else if (edge_matrix.size() > 0)
     {
         auto edges = resolve_edges(mnet,edge_matrix);
         
-        // Check if the attribute is available for all combinations of layers
+        // Get attribute type
         const uu::core::Attribute* att;
         std::set<std::pair<const G*,const G*>> layers;
         std::set<uu::core::AttributeType> types;
@@ -1469,23 +1549,24 @@ getValues(
             {
                 auto attributes = layer1->edges()->attr();
                 att = attributes->get(attribute_name);
-                if (!att)
+                if (att)
                 {
-                    throw std::runtime_error("cannot find attribute: " + attribute_name + " for edges on layer " + layer1->name);
+                    types.insert(att->type);
                 }
-                types.insert(att->type);
-                
             }
             else
             {
                 auto attributes = mnet->interlayer_edges()->attr();
                 att = attributes->get(attribute_name);
-                if (!att)
+                if (att)
                 {
-                    throw std::runtime_error("cannot find attribute: " + attribute_name + " for edges on layers " + layer1->name + ", " + layer2->name);
+                    types.insert(att->type);
                 }
-                types.insert(att->type);
             }
+        }
+        if (types.size() == 0)
+        {
+            throw std::runtime_error("edge attribute " + attribute_name + " not found");
         }
         if (types.size() > 1)
         {
@@ -1507,18 +1588,27 @@ getValues(
                 if (layer1 == layer2)
                 {
                     auto attributes = layer1->edges()->attr();
-                    auto e = layer1->edges()->get(actor1, actor2);
-                    value.append(attributes->get_double(e, attribute_name).value);
+                    if (!attributes->get(attribute_name))
+                    {
+                        value.append(std::numeric_limits<double>::quiet_NaN());
+                    }
+                    else
+                    {
+                        auto e = layer1->edges()->get(actor1, actor2);
+                        value.append(attributes->get_double(e, attribute_name).value);
+                    }
                 }
                 else
                 {
                     auto attributes = mnet->interlayer_edges()->attr();
                     auto e = mnet->interlayer_edges()->get(actor1, layer1, actor2, layer2);
-                    value.append(attributes->get_double(e, attribute_name).value);
+                    auto att_val = attributes->get_double(e, attribute_name);
+                    if (att_val.null) value.append(std::numeric_limits<double>::quiet_NaN());
+                    else value.append(att_val.value);
                 }
             }
             py::dict res;
-            res["value"] = value;
+            res[pybind11::cast(attribute_name)] = value;
             return res;
         }
 
@@ -1535,18 +1625,29 @@ getValues(
                 if (layer1 == layer2)
                 {
                     auto attributes = layer1->edges()->attr();
-                    auto e = layer1->edges()->get(actor1, actor2);
-                    value.append(attributes->get_string(e, attribute_name).value);
+                    if (!attributes->get(attribute_name))
+                    {
+                        value.append("");
+                    }
+                    else
+                    {
+                        auto e = layer1->edges()->get(actor1, actor2);
+                        auto att_val = attributes->get_string(e, attribute_name);
+                        if (att_val.null) value.append("");
+                        else value.append(att_val.value);
+                    }
                 }
                 else
                 {
                     auto attributes = mnet->interlayer_edges()->attr();
                     auto e = mnet->interlayer_edges()->get(actor1, layer1, actor2, layer2);
-                    value.append(attributes->get_string(e, attribute_name).value);
+                    auto att_val = attributes->get_string(e, attribute_name);
+                    if (att_val.null) value.append("");
+                    else value.append(att_val.value);
                 }
             }
             py::dict res;
-            res["value"] = value;
+            res[pybind11::cast(attribute_name)] = value;
             return res;
         }
 
@@ -1561,7 +1662,6 @@ getValues(
         throw std::runtime_error("Required at least one parameter: \"actors\", \"vertices\" or \"edges\"");
     }
 
-    // Never gets here
     return py::dict();
 }
 
@@ -1569,7 +1669,7 @@ void
 setValues(
     PyMLNetwork& rmnet,
     const std::string& attribute_name,
-    const py::list& actor_names,
+    const py::dict& actor_names,
     const py::dict& vertex_matrix,
     const py::dict& edge_matrix,
     const py::list& values
@@ -1594,7 +1694,7 @@ setValues(
             py::print("[Warning] unused parameter: \"edges\"");
         }
 
-        auto actors = resolve_actors(mnet,actor_names);
+        auto actors = resolve_actors(mnet,actor_names["actor"]);
         auto attributes = mnet->actors()->attr();
         auto att = attributes->get(attribute_name);
 
@@ -2904,9 +3004,7 @@ cliquepercolation_ml(
 py::dict
 glouvain_ml(
     const PyMLNetwork& rmnet,
-    double gamma,
-    double omega,
-    int limit
+    double omega
 )
 {
     auto mnet = rmnet.get_mlnet();

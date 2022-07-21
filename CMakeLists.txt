@@ -27,15 +27,8 @@ pybind11_add_module(_multinet MODULE ${SOURCES})
 target_link_libraries(_multinet PRIVATE uunet)
 
 target_include_directories (_multinet PRIVATE
-ext/uunet/ext/eigen3
-ext/uunet/ext/spectra
-ext/uunet/ext/eclat/eclat/src
-ext/uunet/ext/eclat/tract/src
-ext/uunet/ext/eclat/math/src
-ext/uunet/ext/eclat/util/src
-ext/uunet/ext/eclat/apriori/src
+ext/uunet/ext/eclat
 ext/uunet/ext/infomap
-ext/uunet/src
-ext/uunet/libs)
+ext/uunet/src)
 
 add_definitions(-DNS_INFOMAP -DONLY_C_LOCALE=1)

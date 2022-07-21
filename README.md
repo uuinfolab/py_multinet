@@ -14,6 +14,33 @@ This library was originally based on the book: Multilayer Social Networks, by Di
 
 pip install uunet
 
+## Contribute
+
+To modify the library, one should consider that a large part of its code is written in C++ and comes from the [uunet repository](https://github.com/uuinfolab/uunet).
+
+If you only want to modify the functions written in python, this can be done directly in this repository. These functions are in uunet/multinet.py.
+
+After modifying the functions, you can install the new version running pip from the directory where setup-py is located (this requires the setuptools module and the environment needed to recompile uunet):
+
+```sh
+python -m pip install .
+```
+
+The directory C++/ contains the files exporting C++ functions from uunet to python, using ext/pybind11. These functions can also be updated directly in this repository:
+
+- main.cpp contains the definitions of the python functions implemented in C++.
+- py_functions.cpp contains the functions referenced in main.cpp, themselves calling functions from uunet.
+- pycpp_utils.cpp contains some utility functions automating some common tasks used in py_functions.cpp.
+
+If you need to modify any of the files in the directories eclat/, infomap/ and src/, they are imported from uunet and should modified the [uunet repository](https://github.com/uuinfolab/uunet). One can then get the latest code from uunet by running:
+
+```sh
+git submodule update --remote --merge
+```
+
+This command loads the latest code from uunet into ext/.
+
+
 ## Contact
 
 For any inquiries regarding this repository you can contact <matteo.magnani@it.uu.se>.

@@ -1,0 +1,6 @@
+# version 2.0
+
+- aligned interface of actors() with R version, now returning a dictionary
+- get_values() and set_values() require a dictionary also for actors
+- added the option to add attribute values to actors(), vertices(), and edges()
+
