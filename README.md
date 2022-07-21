@@ -9,11 +9,10 @@ This library was originally based on the book: Multilayer Social Networks, by Di
 ## Requirements
 
 * python3
-* The following packages installed: networkx, pkgutil, os, matplotlib, itertools, functools.
 
 ## Installation
 
-pip install python-multinet
+pip install uunet
 
 ## Contact
 

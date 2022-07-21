@@ -76,7 +76,7 @@ with open("DESCRIPTION", "r") as fh:
 try:
     setup(
     name='uunet',
-    version='1.0.1',
+    version='2.0',
     author='Matteo Magnani',
     author_email='matteo.magnani@it.uu.se',
     description='python porting of the R multinet library',
@@ -101,7 +101,5 @@ try:
     )
 except CalledProcessError:
     print('Failed to build extension!')
-    #del kwargs['ext_modules']
-    #setup(**kwargs)
 
 
