@@ -1445,7 +1445,6 @@ getValues(
     }
 
     // local attributes: vertices
-    // must be from a single layer
     else if (vertex_matrix.size() > 0)
     {
         if (edge_matrix.size() > 0)
@@ -1455,75 +1454,92 @@ getValues(
 
         auto vertices = resolve_vertices(mnet,vertex_matrix);
 
-        for (auto layer: *mnet->layers())
+        // Get attribute type
+        const uu::core::Attribute* att;
+        std::set<const G*> layers;
+        std::set<uu::core::AttributeType> types;
+        for (auto v: vertices)
         {
-            std::string layer_name = layer->name;
-            
-            auto attrs = layer->vertices()->attr();
-            for (auto attr: *attrs)
+            auto layer = v.second;
+            layers.insert(layer);
+        }
+        for (auto l: layers)
+        {
+            auto attributes = l->vertices()->attr();
+            att = attributes->get(attribute_name);
+            if (att)
             {
-                if (attr->name != attribute_name) continue;
-                std::string local_att_name = layer_name + ":" + attribute_name;
+                   types.insert(att->type);
+            }
+        }
+        if (types.size() == 0)
+        {
+            throw std::runtime_error("vertex attribute " + attribute_name + " not found for the input layers");
+        }
+        if (types.size() > 1)
+        {
+            throw std::runtime_error("different attribute types on different layers");
+        }
         
-                if (attr->type==uu::core::AttributeType::DOUBLE)
+        auto attribute_type = *types.begin();
+        
+        if (attribute_type==uu::core::AttributeType::NUMERIC || attribute_type==uu::core::AttributeType::DOUBLE)
+        {
+            py::list value;
+            
+            for (size_t i = 0; i<vertices.size(); i++)
+            {
+                auto vertex = vertices.at(i);
+                auto actor = vertex.first;
+                auto layer = vertex.second;
+                auto attributes = layer->vertices()->attr();
+                att = attributes->get(attribute_name);
+                if (!att)
                 {
-                    py::list value;
-                    
-                    for (auto vertex: vertices)
-                    {
-                        auto actor = vertex.first;
-                        auto l = vertex.second;
-                        auto attributes = layer->vertices()->attr();
-
-                        if (layer != l)
-                        {
-                            value.append(std::numeric_limits<double>::quiet_NaN());
-                        }
-                        else
-                        {
-                            auto att_val = attrs->get_double(actor, attr->name);
-                            if (att_val.null) value.append(std::numeric_limits<double>::quiet_NaN());
-                            else value.append(att_val.value);
-                        }
-                    
-                    }
-                    py::dict res;
-                    res[pybind11::cast(local_att_name)] = value;
-                    return res;
+                    value.append(std::numeric_limits<double>::quiet_NaN());
                 }
-
-                else if (attr->type == uu::core::AttributeType::STRING)
-                {
-                    py::list value;
-                    
-                    for (auto vertex: vertices)
-                    {
-                        auto actor = vertex.first;
-                        auto l = vertex.second;
-                        auto attributes = layer->vertices()->attr();
-
-                        if (layer != l)
-                        {
-                            value.append("");
-                        }
-                        else
-                        {
-                            auto att_val = attrs->get_string(actor, attr->name);
-                            if (att_val.null) value.append("");
-                            else value.append(att_val.value);
-                        }
-                    }
-                    
-                    py::dict res;
-                    res[pybind11::cast(local_att_name)] = value;
-                    return res;
-                }
-                
                 else
                 {
-                    throw std::runtime_error("attribute type not supported: " + uu::core::to_string(attr->type));
+                    auto att_val = attributes->get_double(actor, attribute_name);
+                    if (att_val.null) value.append(std::numeric_limits<double>::quiet_NaN());
+                    else value.append(att_val.value);
                 }
             }
+            py::dict res;
+            res[pybind11::cast(attribute_name)] = value;
+            return res;
+        }
+        
+        else if (attribute_type==uu::core::AttributeType::STRING)
+        {
+            py::list value;
+            
+            for (size_t i = 0; i<vertices.size(); i++)
+            {
+                auto vertex = vertices.at(i);
+                auto actor = vertex.first;
+                auto layer = vertex.second;
+                auto attributes = layer->vertices()->attr();
+                att = attributes->get(attribute_name);
+                if (!att)
+                {
+                    value.append("");
+                }
+                else
+                {
+                    auto att_val = attributes->get_string(actor, attribute_name);
+                    if (att_val.null) value.append("");
+                    else value.append(att_val.value);
+                }
+            }
+            py::dict res;
+            res[pybind11::cast(attribute_name)] = value;
+            return res;
+        }
+
+        else
+        {
+            throw std::runtime_error("attribute type not supported: " + uu::core::to_string(attribute_type));
         }
     }
 
@@ -1566,7 +1582,7 @@ getValues(
         }
         if (types.size() == 0)
         {
-            throw std::runtime_error("edge attribute " + attribute_name + " not found");
+            throw std::runtime_error("edge attribute " + attribute_name + " not found for the input layers");
         }
         if (types.size() > 1)
         {

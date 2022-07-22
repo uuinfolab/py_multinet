@@ -444,7 +444,7 @@ PYBIND11_MODULE(_multinet, m) {
     m.def("actors", &actors,
         py::arg("n"),
         py::arg("layers") = py::list(),
-        py::arg("add_attributes") = false,
+        py::arg("attributes") = false,
         R"pbdoc(
         Returns the list of actors present in the input layers, or in the whole multilayer network if no layers are specified.
         
@@ -474,7 +474,7 @@ PYBIND11_MODULE(_multinet, m) {
     m.def("vertices", &vertices,
         py::arg("n"),
         py::arg("layers") = py::list(),
-        py::arg("add_attributes") = false,
+        py::arg("attributes") = false,
         R"pbdoc(
         Returns the list of vertices in the input layers, or in the whole multilayer network if no layers are specified.
         
@@ -503,7 +503,7 @@ PYBIND11_MODULE(_multinet, m) {
         py::arg("n"),
         py::arg("layers1") = py::list(),
         py::arg("layers2") = py::list(),
-        py::arg("add_attributes") = false,
+        py::arg("attributes") = false,
         R"pbdoc(
         Returns the list of edges among vertices in the input layers (if only one set of layers
         is specified), or from the first set of input layers to the second set of input layers,
