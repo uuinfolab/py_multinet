@@ -1418,7 +1418,11 @@ getValues(
 
             for (auto actor: actors)
             {
-                value.append(attributes->get_double(actor,att->name).value);
+                auto val = attributes->get_double(actor,att->name);
+                if (val.null)
+                    value.append(py::none());
+                else value.append(val.value);
+                
             }
             py::dict res;
             res[pybind11::cast(att->name)] = value;
@@ -1431,7 +1435,10 @@ getValues(
 
             for (auto actor: actors)
             {
-                value.append(attributes->get_string(actor,att->name).value);
+                auto val = attributes->get_string(actor,att->name);
+                if (val.null)
+                    value.append(py::none());
+                else value.append(val.value);
             }
             py::dict res;
             res[pybind11::cast(att->name)] = value;
@@ -1528,7 +1535,7 @@ getValues(
                 else
                 {
                     auto att_val = attributes->get_string(actor, attribute_name);
-                    if (att_val.null) value.append("");
+                    if (att_val.null) value.append(py::none());
                     else value.append(att_val.value);
                 }
             }
@@ -1611,7 +1618,10 @@ getValues(
                     else
                     {
                         auto e = layer1->edges()->get(actor1, actor2);
-                        value.append(attributes->get_double(e, attribute_name).value);
+                        auto val = attributes->get_double(e, attribute_name);
+                        if (val.null)
+                            value.append(py::none());
+                        else value.append(val.value);
                     }
                 }
                 else
@@ -1648,9 +1658,10 @@ getValues(
                     else
                     {
                         auto e = layer1->edges()->get(actor1, actor2);
-                        auto att_val = attributes->get_string(e, attribute_name);
-                        if (att_val.null) value.append("");
-                        else value.append(att_val.value);
+                        auto val = attributes->get_string(e, attribute_name);
+                        if (val.null)
+                            value.append(py::none());
+                        else value.append(val.value);
                     }
                 }
                 else
@@ -1658,7 +1669,7 @@ getValues(
                     auto attributes = mnet->interlayer_edges()->attr();
                     auto e = mnet->interlayer_edges()->get(actor1, layer1, actor2, layer2);
                     auto att_val = attributes->get_string(e, attribute_name);
-                    if (att_val.null) value.append("");
+                    if (att_val.null) value.append(py::none());
                     else value.append(att_val.value);
                 }
             }
