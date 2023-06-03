@@ -1,1 +1,6 @@
 .DS_Store
+build
+dist
+uunet.egg-info/
+__pycache__/
+ve/
