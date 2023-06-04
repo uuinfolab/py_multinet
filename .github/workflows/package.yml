@@ -1,5 +1,8 @@
 name: build package
 
+on: 
+  workflow_dispatch
+
 jobs:
   build_sdist:
     name: Build source dist
