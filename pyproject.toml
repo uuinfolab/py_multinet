@@ -2,6 +2,10 @@
 requires = ["setuptools","cmake>=3.20"]
 build-backend = "setuptools.build_meta"
 
+[metadata]
+long_description = file:DESCRIPTION
+long_description_content_type = text/markdown
+
 [project]
 name = "uunet"
 version= "2.1"
@@ -10,7 +14,6 @@ authors = [
 ]
 description = "Python porting of the multinet library"
 readme = "DESCRIPTION"
-long_description_content_type = "text/markdown"
 requires-python = ">=3.8"
 keywords = ["network analysis","multilayer"]
 license = {text = "Apache 2.0"}
