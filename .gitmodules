@@ -1,6 +1,6 @@
 [submodule "ext/uunet"]
 	path = ext/uunet
 	url = https://github.com/uuinfolab/uunet.git
-[submodule "pybind11"]
-	path = pybind11
+[submodule "ext/pybind11"]
+	path = ext/pybind11
 	url = https://github.com/pybind/pybind11
