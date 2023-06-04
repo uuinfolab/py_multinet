@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Python porting of the multinet library"
 readme = "DESCRIPTION"
-#long_description_content_type = "text/markdown"
+long_description_content_type = "text/markdown"
 requires-python = ">=3.8"
 keywords = ["network analysis","multilayer"]
 license = {text = "Apache 2.0"}
