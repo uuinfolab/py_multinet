@@ -32,15 +32,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        #os: [ubuntu-latest, windows-latest, macos-latest]
-        os: [macos-latest]
-        #python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
-        python-version: ["3.11"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
     env:
       CIBW_SKIP: "*-win32"
-      CIBW_ARCHS_MACOS: arm64
-      CIBW_ARCHS_WINDOWS: auto ARM64
-      CIBW_BUILD_VERBOSITY: 3
     steps:
     - name: Checkout library
       uses: actions/checkout@v3
@@ -53,9 +48,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
       
     - uses: pypa/cibuildwheel@v2.13.0
-#     env:
-#       CIBW_ARCHS_MACOS: arm64
-#       CIBW_ARCHS_WINDOWS: auto ARM64
+      env:
+        CIBW_ARCHS_MACOS: x86_64
+        CIBW_ARCHS_WINDOWS: auto ARM64
         
     - name: Verify clean directory
       run: git diff --exit-code

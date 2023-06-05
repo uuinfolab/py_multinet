@@ -27,7 +27,7 @@ Install the latest version of uunet:
     
 Notes:
 
-- Python >= 3.11 is required
+- Python >= 3.8 is required
 - The package is not compatible with conda
 
 Credits
