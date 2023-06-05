@@ -40,6 +40,7 @@ jobs:
       CIBW_SKIP: "*-win32"
       CIBW_ARCHS_MACOS: arm64
       CIBW_ARCHS_WINDOWS: auto ARM64
+      CIBW_BUILD_VERBOSITY: 3
     steps:
     - name: Checkout library
       uses: actions/checkout@v3
@@ -52,7 +53,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
       
     - uses: pypa/cibuildwheel@v2.13.0
-      build_verbosity: 2
 #     env:
 #       CIBW_ARCHS_MACOS: arm64
 #       CIBW_ARCHS_WINDOWS: auto ARM64
