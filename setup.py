@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import platform
+import sysconfig
 import subprocess
 import setuptools
 
@@ -49,6 +50,13 @@ class CMakeBuild(build_ext):
             if sys.maxsize > 2**32:
                 cmake_args += ['-A', 'x64']
             build_args += ['--', '/m']
+        elif sys.platform == 'darwin':
+            macosx_target_ver = sysconfig.get_config_var('MACOSX_DEPLOYMENT_TARGET')
+            if macosx_target_ver and 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
+                cmake_args.append(f'-DCMAKE_OSX_DEPLOYMENT_TARGET={macosx_target_ver}')
+
+            osx_arch = platform.machine()
+            cmake_args.append(f'-DCMAKE_OSX_ARCHITECTURES={osx_arch}')
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j2']
