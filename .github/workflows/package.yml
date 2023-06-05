@@ -33,6 +33,8 @@ jobs:
       matrix:
         #os: [ubuntu-latest, windows-latest, macos-latest]
         os: [macos-latest]
+        #python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.11"]
     env:
       CIBW_SKIP: "*-win32"
       CIBW_ARCHS_MACOS: arm64
@@ -42,6 +44,11 @@ jobs:
       with:
         submodules: true
 
+    - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
     - uses: pypa/cibuildwheel@v2.13.0
 #      env:
 #        CIBW_ARCHS_MACOS: arm64
