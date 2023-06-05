@@ -35,15 +35,17 @@ jobs:
         os: [macos-latest]
     env:
       CIBW_SKIP: "*-win32"
+      CIBW_ARCHS_MACOS: arm64
+      CIBW_ARCHS_WINDOWS: auto ARM64
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: true
 
     - uses: pypa/cibuildwheel@v2.13.0
-      env:
-        CIBW_ARCHS_MACOS: arm64
-        CIBW_ARCHS_WINDOWS: auto ARM64
+#      env:
+#        CIBW_ARCHS_MACOS: arm64
+#        CIBW_ARCHS_WINDOWS: auto ARM64
         
     - name: Verify clean directory
       run: git diff --exit-code
