@@ -3,4 +3,4 @@ build
 dist
 uunet.egg-info/
 __pycache__/
-ve/
+ve*
