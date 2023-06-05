@@ -42,7 +42,7 @@ jobs:
 
     - uses: pypa/cibuildwheel@v2.13.0
       env:
-        CIBW_ARCHS_MACOS: x86_64 arm64 #universal2
+        CIBW_ARCHS_MACOS: arm64
         CIBW_ARCHS_WINDOWS: auto ARM64
         
     - name: Verify clean directory
