@@ -7,7 +7,8 @@ jobs:
     name: Build source dist
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout library
+      uses: actions/checkout@v3
       with:
         submodules: true
 
@@ -40,14 +41,15 @@ jobs:
       CIBW_ARCHS_MACOS: arm64
       CIBW_ARCHS_WINDOWS: auto ARM64
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout library
+      uses: actions/checkout@v3
       with:
         submodules: true
 
     - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
       
     - uses: pypa/cibuildwheel@v2.13.0
 #      env:
