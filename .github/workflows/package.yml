@@ -64,7 +64,8 @@ jobs:
         CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
         CIBW_ARCHS_MACOS: x86_64
         CIBW_ARCHS_WINDOWS: all
-        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: pip install abi3audit && abi3audit --strict --report {wheel} && copy {wheel} {dest_dir}
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
+        #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: pip install abi3audit && abi3audit --strict --report {wheel} && copy {wheel} {dest_dir}
 
     - uses: actions/upload-artifact@v4
       with:
