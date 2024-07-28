@@ -27,7 +27,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: cibw-sdist
-        path: sdist/*.tar.gz
+        path: dist/*.tar.gz
 
 
   build_wheels:
