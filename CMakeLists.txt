@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
 project(uunet LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -10,7 +10,7 @@ if (CMAKE_CXX_COMPILER MATCHES ".*clang.*" OR CMAKE_CXX_COMPILER_ID STREQUAL "Cl
 	set (CMAKE_COMPILER_IS_CLANGXX 1)
 endif()
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fno-inline -std=c++14")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fno-inline -std=c++17")
 
 if (APPLE)
     set(CMAKE_INSTALL_RPATH @loader_path)

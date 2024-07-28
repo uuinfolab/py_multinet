@@ -47,9 +47,9 @@ emptyMultilayer(
 
 PyMLNetwork
 readMultilayer(const std::string& input_file,
-               const std::string& name, char sep, bool vertex_aligned)
+               const std::string& name, bool vertex_aligned)
 {
-    return PyMLNetwork(uu::net::read_multilayer_network(input_file,name,sep,vertex_aligned));
+    return PyMLNetwork(uu::net::read_multilayer_network(input_file,name,vertex_aligned));
 }
 
 
@@ -1706,10 +1706,13 @@ setValues(
 )
 {
     auto mnet = rmnet.get_mlnet();
-
+    
+    
     if (actor_names.size() != 0)
     {
-        if (actor_names.size() != values.size() && values.size()!=1)
+        auto actors = resolve_actors(mnet,actor_names["actor"]);
+        
+        if (actors.size() != values.size() && values.size()!=1)
         {
             throw std::runtime_error("wrong number of values");
         }
@@ -1724,7 +1727,6 @@ setValues(
             py::print("[Warning] unused parameter: \"edges\"");
         }
 
-        auto actors = resolve_actors(mnet,actor_names["actor"]);
         auto attributes = mnet->actors()->attr();
         auto att = attributes->get(attribute_name);
 
@@ -3034,12 +3036,13 @@ cliquepercolation_ml(
 py::dict
 glouvain_ml(
     const PyMLNetwork& rmnet,
+    double gamma,
     double omega
 )
 {
     auto mnet = rmnet.get_mlnet();
 
-    auto com_struct = uu::net::glouvain2<M>(mnet, omega);
+    auto com_struct = uu::net::glouvain2<M>(mnet, omega, gamma);
 
     return to_dataframe(com_struct.get());
 }

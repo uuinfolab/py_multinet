@@ -1,4 +1,5 @@
-#TYPE multiplex
+#TYPE
+multiplex
 
 #LAYERS
 KAPFTS1,UNDIRECTED
