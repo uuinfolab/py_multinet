@@ -66,7 +66,6 @@ PYBIND11_MODULE(_multinet, m) {
     m.def("read", &readMultilayer,
         py::arg("file"),
         py::arg("name") = "unnamed",
-        py::arg("sep") = ',',
         py::arg("aligned") = false,
         R"pbdoc(
         Reads a multilayer network from a file.
@@ -77,8 +76,6 @@ PYBIND11_MODULE(_multinet, m) {
             The path of the file storing the multilayer network.
         name : str, optional
             The name of the multilayer network.
-        sep : char, optional
-            The character used in the file to separate text fields.
         aligned : bool, optional
             If True, all actors are added to all layers.
         
@@ -1657,6 +1654,8 @@ PYBIND11_MODULE(_multinet, m) {
         R"pbdoc(
         Extension of the clique percolation method.
         
+        All directed edges are considered as undirected.
+        
         Parameters
         ----------
         n : PyMLNetwork
@@ -1664,7 +1663,7 @@ PYBIND11_MODULE(_multinet, m) {
         k : int
             Minimum number of actors in a clique. Must be at least 3.
         m : int
-            Minimum number of common layers in a clique.
+            Minimum number of common layers in a clique. Not to be confused with number of edges, as it is meant in the summary function (here we use the notation of the paper introducing this algorithm).
 
         Returns
         -------
@@ -1689,14 +1688,19 @@ PYBIND11_MODULE(_multinet, m) {
     /*********************************************************************************/
     m.def("glouvain", &glouvain_ml,
         py::arg("n"),
+        py::arg("gamma") = 1.0,
         py::arg("omega") = 1.0,
         R"pbdoc(
         Extension of the louvain method.
+        
+        It only works on undirected networks, and considers weights if all layers have an edge attribute named w_ of type DOUBLE.
         
         Parameters
         ----------
         n : PyMLNetwork
             A multilayer network.
+        gamma : double
+            Resolution parameter.
         omega : double
             Inter-layer weight parameter in the generalized louvain method.
 

@@ -34,7 +34,6 @@ PyMLNetwork
 readMultilayer(
                const std::string& input_file,
                const std::string& name,
-               char sep,
                bool vertex_aligned
                );
 
@@ -405,6 +404,7 @@ mdlp(
 py::dict
 glouvain_ml(
     const PyMLNetwork&,
+    double gamma,
     double omega
 );
 
