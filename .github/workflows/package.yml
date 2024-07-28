@@ -65,6 +65,9 @@ jobs:
 
   pypi-publish:
     name: upload release to PyPI
+    needs:
+    - build_sdist
+    - build_wheels
     runs-on: ubuntu-latest
     environment: release-test
     permissions:
