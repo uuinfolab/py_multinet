@@ -44,6 +44,7 @@ jobs:
         #python-version: ["3.11"]
     env:
       CIBW_SKIP: "*-win32"
+      CIBW_BUILD: cp38-cp39
     steps:
     - name: Checkout library
       uses: actions/checkout@v4
