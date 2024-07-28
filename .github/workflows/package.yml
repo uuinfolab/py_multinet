@@ -26,8 +26,8 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: sdist
-        path: dist/*.tar.gz
+        name: cibw-sdist
+        path: sdist/*.tar.gz
 
 
   build_wheels:
@@ -41,7 +41,7 @@ jobs:
         os: [windows-latest, macos-13, macos-14]
         #python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         #for testing
-        #python-version: ["3.11"]
+        python-version: ["3.11"]
     env:
       CIBW_SKIP: "*-win32"
     steps:
@@ -52,8 +52,9 @@ jobs:
 
     - name: Set up Python
       uses: actions/setup-python@v5
-      #with:
-      #  python-version: ${{ matrix.python-version }}
+      with:
+        python-version: 3.8
+      if: runner.os == 'macOS' && runner.arch == 'ARM64'
 
     - name: Install cibuildwheel
       run: python -m pip install cibuildwheel==2.19.2
@@ -62,13 +63,15 @@ jobs:
       run: python -m cibuildwheel --output-dir wheelhouse
       env:
         CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
-        CIBW_ARCHS_MACOS: x86_64
+        #CIBW_ARCHS_MACOS: x86_64
         CIBW_ARCHS_WINDOWS: all
+        CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "pip install delvewheel && delvewheel repair -w {dest_dir} {wheel}"
         #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: pip install abi3audit && abi3audit --strict --report {wheel} && copy {wheel} {dest_dir}
 
     - uses: actions/upload-artifact@v4
       with:
+        name: cibw-wheels-cp${{ matrix.python }}-${{ matrix.os }}
         path: wheelhouse/*.whl
     
   pypi-publish-test:
@@ -85,8 +88,9 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v4
       with:
-        name: artifact
+        pattern: cibw-*
         path: dist
+        merge-multiple: true
     - name: Publish
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
