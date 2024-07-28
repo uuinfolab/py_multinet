@@ -67,7 +67,7 @@ jobs:
         name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
         path: wheelhouse/*.whl
     
-  pypi-publish:
+  pypi-publish-test:
     if: false
     name: upload release to PyPI
     needs:
@@ -82,12 +82,13 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: sdist
-        path: dist/
+        path: dist
     - name: Download wheels
       uses: actions/download-artifact@v4
       with:
-        name: cibw-wheels-*
-        path: wheelhouse/
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
     - name: Publish
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
