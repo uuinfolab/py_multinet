@@ -64,6 +64,7 @@ jobs:
         path: wheelhouse/*.whl
 
   pypi-publish:
+    if: false
     name: upload release to PyPI
     needs:
     - build_sdist
