@@ -59,6 +59,7 @@ jobs:
     - name: Build wheels
       run: python -m cibuildwheel --output-dir wheelhouse
       env:
+        CIBW_ENVIRONMENT: OSX_DEPLOYMENT_TARGET=10.13
         CIBW_ARCHS_MACOS: x86_64
         CIBW_ARCHS_WINDOWS: all
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: pip install abi3audit && abi3audit --strict --report {wheel} && copy {wheel} {dest_dir}
