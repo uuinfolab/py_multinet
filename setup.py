@@ -51,9 +51,11 @@ class CMakeBuild(build_ext):
                 cmake_args += ['-A', 'x64']
             build_args += ['--', '/m']
         elif sys.platform == 'darwin':
-            macosx_target_ver = sysconfig.get_config_var('MACOSX_DEPLOYMENT_TARGET')
-            if macosx_target_ver and 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
-                cmake_args.append(f'-DCMAKE_OSX_DEPLOYMENT_TARGET={macosx_target_ver}')
+            #macosx_target_ver = sysconfig.get_config_var('MACOSX_DEPLOYMENT_TARGET')
+            #if macosx_target_ver and 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
+            #    print(f'-DCMAKE_OSX_DEPLOYMENT_TARGET={macosx_target_ver}')
+            #cmake_args.append(f'-DCMAKE_OSX_DEPLOYMENT_TARGET={macosx_target_ver}')
+            cmake_args.append(f'-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13')
 
             osx_arch = platform.machine()
             cmake_args.append(f'-DCMAKE_OSX_ARCHITECTURES={osx_arch}')
