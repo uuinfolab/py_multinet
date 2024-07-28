@@ -38,7 +38,7 @@ jobs:
       matrix:
         #os: [ubuntu-latest, windows-latest, macos-13, macos-14]
         #for testing
-        os: [windows-latest, macos-13, macos-14]
+        os: [windows-latest]
         #python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         #for testing
         #python-version: ["3.11"]
@@ -70,6 +70,10 @@ jobs:
         #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: pip install abi3audit && abi3audit --strict --report {wheel} && copy {wheel} {dest_dir}
 
     - run: ls
+    
+    - run: ls lib
+
+    - run: ls uunet
     
     - uses: actions/upload-artifact@v4
       with:
