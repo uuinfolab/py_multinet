@@ -56,7 +56,7 @@ jobs:
         python-version: 3.8
       if: runner.os == 'macOS' && runner.arch == 'ARM64'
 
-    - run: "dir && python -m pip install . && dir && cd build && dir && cd \"lib.win-amd64-cpython-38\" && dir && cd uunet && dir"
+    - run: "dir && python -m pip install . && dir && cd build && dir && cd \"lib.win-amd64-cpython-39\" && dir && cd uunet && dir"
 
     - name: Install cibuildwheel
       if: false
