@@ -57,7 +57,7 @@ jobs:
       if: runner.os == 'macOS' && runner.arch == 'ARM64'
 
     #- run: "dir && python -m pip install . && dir && cd build && dir && cd \"lib.win-amd64-cpython-39\" && dir && cd uunet && dir"
-    - run: "cd ext && dir && cd uunet && dir && mkdir build && cd build && make && make install && dir && cd lib && dir"
+    - run: "cd ext && dir && cd uunet && dir && mkdir build && cd build && cmake .. && make install && dir && cd lib && dir"
     
     - name: Install cibuildwheel
       if: false
