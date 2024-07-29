@@ -4,7 +4,6 @@ on: [workflow_dispatch]
 
 jobs:
   build_sdist:
-    if: false
     name: Build source dist
     runs-on: ubuntu-latest
     steps:
@@ -32,17 +31,13 @@ jobs:
 
 
   build_wheels:
+    if: false
     name: Wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        #os: [ubuntu-latest, windows-latest, macos-13, macos-14]
-        #for testing
-        os: [windows-latest]
-        #python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
-        #for testing
-        #python-version: ["3.11"]
+        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
     env:
       CIBW_SKIP: "*-win32"
     steps:
@@ -58,6 +53,7 @@ jobs:
       if: runner.os == 'macOS' && runner.arch == 'ARM64'
 
     - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && move \"ext/uunet/build/libuunet.dll\" \"uunet.dll\" && dir"
+      if: matrix.os == 'windows-latest'
     
     - name: Install cibuildwheel
       run: python -m pip install cibuildwheel==2.19.1
@@ -70,11 +66,8 @@ jobs:
         CIBW_ARCHS_WINDOWS: all
         CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "pip install delvewheel && delvewheel repair --add-path . -vv -w {dest_dir} {wheel}"
-        #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "cd build && cd \"lib.win-amd64-cpython-38\" && cd uunet && dir"
-        #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: pip install abi3audit && abi3audit --strict --report {wheel} && copy {wheel} {dest_dir}
-
+        
     - uses: actions/upload-artifact@v4
-      if: false
       with:
         name: cibw-wheels-${{ matrix.os }}
         path: wheelhouse/*.whl
