@@ -56,10 +56,14 @@ jobs:
         python-version: 3.8
       if: runner.os == 'macOS' && runner.arch == 'ARM64'
 
+    - run: "dir && python -m pip install . && dir && cd build && dir && cd \"lib.win-amd64-cpython-38\" && dir && cd uunet && dir"
+
     - name: Install cibuildwheel
+      if: false
       run: python -m pip install cibuildwheel==2.19.1
 
     - name: Build wheels
+      if: false
       run: python -m cibuildwheel --output-dir wheelhouse
       env:
         CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
@@ -71,6 +75,7 @@ jobs:
         #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: pip install abi3audit && abi3audit --strict --report {wheel} && copy {wheel} {dest_dir}
 
     - uses: actions/upload-artifact@v4
+      if: false
       with:
         name: cibw-wheels-${{ matrix.os }}
         path: wheelhouse/*.whl
