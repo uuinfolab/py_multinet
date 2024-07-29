@@ -4,6 +4,7 @@ on: [workflow_dispatch]
 
 jobs:
   build_sdist:
+    if: false
     name: Build source dist
     runs-on: ubuntu-latest
     steps:
@@ -58,6 +59,7 @@ jobs:
 
     #- run: "dir && python -m pip install . && dir && cd build && dir && cd \"lib.win-amd64-cpython-39\" && dir && cd uunet && dir"
     - run: cmake --help
+    - run: cmake -G "NMake Makefiles"
     #- run: "cd ext && dir && cd uunet && dir && mkdir build && cd build && cmake -G \"NMake Makefiles\" .. && dir && make && dir && make install && dir && cd lib && dir"
     
     - name: Install cibuildwheel
