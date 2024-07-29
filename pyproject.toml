@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "uunet"
-version= "2.2-test1"
+version= "2.2.dev1"
 authors = [
     {name = "Matteo Magnani", email = "matteo.magnani@it.uu.se"}
 ]
