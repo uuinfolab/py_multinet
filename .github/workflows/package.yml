@@ -57,23 +57,20 @@ jobs:
         python-version: 3.8
       if: runner.os == 'macOS' && runner.arch == 'ARM64'
 
-    #- run: "dir && python -m pip install . && dir && cd build && dir && cd \"lib.win-amd64-cpython-39\" && dir && cd uunet && dir"
-    - run: "cd ext && dir && cd uunet && dir && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && dir && make && dir && make install && dir && cd lib && dir"
+    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && move \"ext/uunet/build/libuunet.dll\" . && dir"
     
     - name: Install cibuildwheel
-      if: false
       run: python -m pip install cibuildwheel==2.19.1
 
     - name: Build wheels
-      if: false
       run: python -m cibuildwheel --output-dir wheelhouse
       env:
         CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
         #CIBW_ARCHS_MACOS: x86_64
         CIBW_ARCHS_WINDOWS: all
         CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
-        #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "pip install delvewheel && delvewheel repair --add-path build/lib.win-amd64-cpython-38;build/lib.win-amd64-cpython-39 -vv -w {dest_dir} {wheel}"
-        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "cd build && cd \"lib.win-amd64-cpython-38\" && cd uunet && dir"
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "pip install delvewheel && delvewheel repair --add-path . -vv -w {dest_dir} {wheel}"
+        #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "cd build && cd \"lib.win-amd64-cpython-38\" && cd uunet && dir"
         #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: pip install abi3audit && abi3audit --strict --report {wheel} && copy {wheel} {dest_dir}
 
     - uses: actions/upload-artifact@v4
