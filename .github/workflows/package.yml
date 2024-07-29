@@ -73,8 +73,7 @@ jobs:
         path: wheelhouse/*.whl
     
   pypi-publish-test:
-    if: false
-    name: upload release to PyPI
+    name: upload release to TestPyPI
     needs:
     - build_sdist
     - build_wheels
