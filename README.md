@@ -47,6 +47,8 @@ git submodule update --remote --merge
 
 This command loads the latest code from uunet into ext/.
 
+The repository has two workflows, publish-test and publish, generating source distribution and wheels and uploading them respectively to TestPyPI and PyPI. For PyPI we use .devN as a suffix for the library version, that is used under development with publish-test. When a new stable release is ready, publish is run on the master branch without .devN. 
+
 ## Contact
 
 For any inquiries regarding this repository you can contact <matteo.magnani@it.uu.se>.
