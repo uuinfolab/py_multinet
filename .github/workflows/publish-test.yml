@@ -1,0 +1,93 @@
+name: build package and upload to TestPyPI
+
+on: [workflow_dispatch]
+
+jobs:
+  build_sdist:
+    name: Build source dist
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout library
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      
+    - name: Install dependencies
+      run: python -m pip install build twine
+
+    - name: Build
+      run: python -m build --sdist
+
+    - name: Check metadata
+      run: python -m twine check dist/*
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cibw-sdist
+        path: dist/*.tar.gz
+
+
+  build_wheels:
+    name: Wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+    env:
+      CIBW_SKIP: "*-win32"
+    steps:
+    - name: Checkout library
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.8
+      if: runner.os == 'macOS' && runner.arch == 'ARM64'
+
+    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && move \"ext/uunet/build/libuunet.dll\" \"uunet.dll\" && dir"
+      if: matrix.os == 'windows-latest'
+    
+    - name: Install cibuildwheel
+      run: python -m pip install cibuildwheel==2.19.1
+
+    - name: Build wheels
+      run: python -m cibuildwheel --output-dir wheelhouse
+      env:
+        CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
+        #CIBW_ARCHS_MACOS: x86_64
+        CIBW_ARCHS_WINDOWS: AMD64 
+        CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "pip install delvewheel && delvewheel repair --add-path . -vv -w {dest_dir} {wheel}"
+        
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cibw-wheels-${{ matrix.os }}
+        path: wheelhouse/*.whl
+    
+  pypi-publish-test:
+    name: upload release to TestPyPI
+    needs:
+    - build_sdist
+    - build_wheels
+    runs-on: ubuntu-latest
+    environment: release-test
+    permissions:
+      id-token: write
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
