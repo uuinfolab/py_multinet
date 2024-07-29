@@ -1,4 +1,4 @@
-name: build package
+name: build package and upload to PyPI
 
 on: [workflow_dispatch]
 
@@ -14,7 +14,11 @@ jobs:
 
     - name: Set up Python
       uses: actions/setup-python@v5
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> 4716187034ce2edf049c11710449f29350cb6368
     - name: Install dependencies
       run: python -m pip install build twine
 
@@ -53,7 +57,11 @@ jobs:
 
     - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && move \"ext/uunet/build/libuunet.dll\" \"uunet.dll\" && dir"
       if: matrix.os == 'windows-latest'
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 4716187034ce2edf049c11710449f29350cb6368
     - name: Install cibuildwheel
       run: python -m pip install cibuildwheel==2.19.1
 
@@ -62,15 +70,26 @@ jobs:
       env:
         CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
         #CIBW_ARCHS_MACOS: x86_64
+<<<<<<< HEAD
         CIBW_ARCHS_WINDOWS: AMD64 
         CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "pip install delvewheel && delvewheel repair --add-path . -vv -w {dest_dir} {wheel}"
         
+=======
+        CIBW_ARCHS_WINDOWS: AMD64
+        CIBW_REPAIR_WHEEL_COMMAND_MACOS: DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "pip install delvewheel && delvewheel repair --add-path . -vv -w {dest_dir} {wheel}"
+
+>>>>>>> 4716187034ce2edf049c11710449f29350cb6368
     - uses: actions/upload-artifact@v4
       with:
         name: cibw-wheels-${{ matrix.os }}
         path: wheelhouse/*.whl
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 4716187034ce2edf049c11710449f29350cb6368
   pypi-publish:
     name: upload release to PyPI
     needs:
