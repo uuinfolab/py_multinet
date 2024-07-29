@@ -31,7 +31,6 @@ jobs:
 
 
   build_wheels:
-    if: false
     name: Wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -76,7 +75,7 @@ jobs:
     name: upload release to TestPyPI
     needs:
     - build_sdist
-    #- build_wheels
+    - build_wheels
     runs-on: ubuntu-latest
     environment: release-test
     permissions:
