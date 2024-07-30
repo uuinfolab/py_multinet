@@ -1,4 +1,4 @@
-name: build package and upload to TestPyPI
+name: windows wheels test
 
 on: [workflow_dispatch]
 

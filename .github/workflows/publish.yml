@@ -1,4 +1,4 @@
-name: windows wheels test
+name: build package and upload to PyPI
 
 on: [workflow_dispatch]
 
