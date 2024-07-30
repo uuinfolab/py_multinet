@@ -35,5 +35,5 @@ jobs:
         
     - run: cd wheelhouse && dir && python -m pip install uunet-2.2.dev3-cp311-cp311-win_amd64.whl
     
-    - run: python -c "import uunet.multinet as ml"
+    - run: mkdir test && cd test && python -c "import uunet.multinet as ml"
     
