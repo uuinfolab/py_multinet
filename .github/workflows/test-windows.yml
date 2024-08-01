@@ -30,7 +30,7 @@ jobs:
       env:
         CIBW_BUILD: cp311-win_amd64
         CIBW_ARCHS_WINDOWS: AMD64
-        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "dir && cd build && dir && cd lib.win-amd64-cpython-311 && dir && pip install delvewheel && delvewheel show -v --add-path . {wheel} && delvewheel repair -v --add-path . -w {dest_dir} {wheel}"
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "dir && cd build && dir && cd lib.win-amd64-cpython-311 && dir && cd uunet && dir && pip install delvewheel && delvewheel show -v --add-path . {wheel} && delvewheel repair -v --add-path . -w {dest_dir} {wheel}"
 
 #    - run: cd wheelhouse && dir && Expand-Archive uunet-2.2.dev3-cp311-cp311-win_amd64.whl && cd uunet-2.2.dev3-cp311-cp311-win_amd64 && dir && move ../../uunet.dll  uunet/ && cd .. && Compress-Archive -Force uunet-2.2.dev3-cp311-cp311-win_amd64 uunet-2.2.dev3-cp311-cp311-win_amd64.whl 
 #    - run: cd wheelhouse && dir &&  Move-Item ../libuunet.dll libuunet.dll && Copy-Item libuunet.dll uunet.dll
