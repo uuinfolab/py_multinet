@@ -18,7 +18,7 @@ jobs:
       with:
         python-version: '3.11'
       
-    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && dir"
+#    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && dir"
     
 #    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && make install"
       
@@ -30,10 +30,10 @@ jobs:
       env:
         CIBW_BUILD: cp311-win_amd64
         CIBW_ARCHS_WINDOWS: AMD64
-        #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "pip install delvewheel && delvewheel show {wheel} && delvewheel repair --add-path . -w {dest_dir} {wheel}"
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "dir && pip install delvewheel && delvewheel show -v {wheel} && delvewheel repair -v --add-path . -w {dest_dir} {wheel}"
 
 #    - run: cd wheelhouse && dir && Expand-Archive uunet-2.2.dev3-cp311-cp311-win_amd64.whl && cd uunet-2.2.dev3-cp311-cp311-win_amd64 && dir && move ../../uunet.dll  uunet/ && cd .. && Compress-Archive -Force uunet-2.2.dev3-cp311-cp311-win_amd64 uunet-2.2.dev3-cp311-cp311-win_amd64.whl 
-    - run: cd wheelhouse && dir &&  Move-Item ../libuunet.dll libuunet.dll && Copy-Item libuunet.dll uunet.dll
+#    - run: cd wheelhouse && dir &&  Move-Item ../libuunet.dll libuunet.dll && Copy-Item libuunet.dll uunet.dll
     
     - run: cd wheelhouse && dir && python -m pip cache purge && python -m pip install uunet-2.2.dev3-cp311-cp311-win_amd64.whl
       
