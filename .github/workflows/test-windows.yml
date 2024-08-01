@@ -37,7 +37,7 @@ jobs:
     
     - run: cd wheelhouse && dir && python -m pip cache purge && python -m pip install uunet-2.2.dev3-cp311-cp311-win_amd64.whl
       
-    - run: cd wheelhouse && python -c "import os; os.add_dll_directory('.'); import uunet.multinet as ml ; ml.empty"
+    - run: cd wheelhouse && python -c "import os; wd = os.path.abspath('.'); os.add_dll_directory(wd); import uunet.multinet as ml ; ml.empty"
       
     - uses: actions/upload-artifact@v4
       if: false
