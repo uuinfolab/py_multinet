@@ -17,11 +17,14 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-      
+
+    - run: mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && dir && cd .. && dir
+
 #    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && Copy-Item \"libuunet.dll\" \"uunet.dll\" && dir"
 #    - run: "cd ext && cd uunet && mkdir build && cd build && cmake .. && cmake --build . && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && dir"
 
     - run: python -m pip wheel .
+      if: false
 
 #    - run: mkdir wheelhouse && dir && Move-Item *.whl wheelhouse/ && dir
 
@@ -44,10 +47,11 @@ jobs:
 
 # puts repaired in wheelhouse by default
     - run: mkdir wheelhouse && dir && pip install delvewheel && delvewheel show -v --add-path . uunet-2.2.dev3-cp311-cp311-win_amd64.whl && delvewheel repair -v --add-path . uunet-2.2.dev3-cp311-cp311-win_amd64.whl
+      if: false
     - run: cd wheelhouse && dir && python -m pip cache purge && python -m pip install uunet-2.2.dev3-cp311-cp311-win_amd64.whl
-      
+      if: false
     - run: cd wheelhouse && python -c "import os; wd = os.path.abspath('.'); os.add_dll_directory(wd); import uunet.multinet as ml ; ml.empty"
-      
+      if: false
     - uses: actions/upload-artifact@v4
       if: false
       with:
