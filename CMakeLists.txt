@@ -24,7 +24,7 @@ endif()
 add_subdirectory(ext/pybind11)
 # add_subdirectory(ext/uunet)
 
-file (GLOB_RECURSE SOURCES C++/*cpp ext/uunet/*cpp ext/uunet/*c)
+file (GLOB_RECURSE SOURCES C++/*cpp ext/uunet/ext/eclat/*.c ext/uunet/ext/infomap/*.cpp  ext/uunet/src/*cpp)
 pybind11_add_module(_multinet MODULE ${SOURCES})
 # target_link_libraries(_multinet PRIVATE uunet)
 
