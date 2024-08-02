@@ -36,10 +36,10 @@ ext/uunet/ext/boost
 ext/uunet/src)
 
 # without lines below, yocto build works fine
-install(TARGETS _multinet)
+install(TARGETS _multinet
   #COMPONENT python
   #RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-  #LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
   #ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
   
 #add_definitions(-DNS_INFOMAP -DONLY_C_LOCALE=1)
