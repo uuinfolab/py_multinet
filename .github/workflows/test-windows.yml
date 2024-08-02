@@ -18,15 +18,21 @@ jobs:
       with:
         python-version: '3.11'
       
-#    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && dir"
-    - run: "cd ext && cd uunet && mkdir build && cd build && cmake .. && cmake --build . && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && dir"
-    
+    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && dir"
+#    - run: "cd ext && cd uunet && mkdir build && cd build && cmake .. && cmake --build . && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && dir"
+
+    - run: python -m pip wheel .
+
+    - run: mkdir wheelhouse && dir && Move-Item *.whl wheelhouse/ && dir
+
 #    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && make install"
       
     - name: Install cibuildwheel
+      if: false
       run: python -m pip install cibuildwheel==2.19.1
 
     - name: Build wheels
+      if: false
       run: python -m cibuildwheel --output-dir wheelhouse
       env:
         CIBW_BUILD: cp311-win_amd64
