@@ -27,11 +27,11 @@ jobs:
 
     - run: python -m pip wheel .
 
-    - run: dir && cd build && dir && cd lib.win-amd64-cpython-311 && dir && cd uunet && dir
+#    - run: dir && cd build && dir && cd lib.win-amd64-cpython-311 && dir && cd uunet && dir
 
-    - run: mkdir wheelhouse && Move-Item build/lib.win-amd64-cpython-311/uunet/*.whl wheelhouse/
+    - run: mkdir wheelhouse && Move-Item uunet*.whl wheelhouse/
 
-    - run: cd wheelhouse && dir
+#    - run: cd wheelhouse && dir
 
 #    - run: mkdir wheelhouse && dir && Move-Item *.whl wheelhouse/ && dir
 
