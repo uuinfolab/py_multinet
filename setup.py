@@ -46,10 +46,13 @@ class CMakeBuild(build_ext):
         cmake_args += ["-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE"]
         
         if platform.system() == "Windows":
+            print('Windows!')
             cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
+            cmake_args += ['-G "Unix Makefiles"']
             if sys.maxsize > 2**32:
                 cmake_args += ['-A', 'x64']
             build_args += ['--', '/m']
+            print(cmake_args)
         elif sys.platform == 'darwin':
             #macosx_target_ver = sysconfig.get_config_var('MACOSX_DEPLOYMENT_TARGET')
             #if macosx_target_ver and 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
@@ -72,6 +75,8 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 from subprocess import CalledProcessError
+
+print('Running setup')
 
 try:
     setup(
