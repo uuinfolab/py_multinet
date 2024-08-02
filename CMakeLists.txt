@@ -21,6 +21,11 @@ endif()
 add_subdirectory(ext/pybind11)
 file (GLOB_RECURSE LIBSOURCES ext/uunet/*cpp ext/uunet/*c)
 add_library (uunet SHARED ${LIBSOURCES})
+target_include_directories (uunet PRIVATE
+ext/uunet/ext/eclat
+ext/uunet/ext/infomap
+ext/uunet/ext/boost
+ext/uunet/src)
 # add_subdirectory(ext/uunet)
 
 file (GLOB_RECURSE SOURCES C++/*cpp)
