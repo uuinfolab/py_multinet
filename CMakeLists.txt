@@ -22,7 +22,7 @@ else()
 endif()
 
 add_subdirectory(ext/pybind11)
-add_subdirectory(ext/uunet)
+#add_subdirectory(ext/uunet)
 
 file (GLOB_RECURSE SOURCES C++/*cpp ext/uunet/ext/eclat/*.c ext/uunet/ext/infomap/*.cpp  ext/uunet/src/*cpp)
 #file (GLOB_RECURSE SOURCES C++/*cpp)
@@ -35,11 +35,3 @@ ext/uunet/ext/infomap
 ext/uunet/ext/boost
 ext/uunet/src)
 
-# without lines below, yocto build works fine
-install(TARGETS _multinet
-  COMPONENT python
-  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-  
-#add_definitions(-DNS_INFOMAP -DONLY_C_LOCALE=1)
