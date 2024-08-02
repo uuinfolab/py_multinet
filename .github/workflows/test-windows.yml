@@ -23,7 +23,7 @@ jobs:
 
     - run: python -m pip wheel .
 
-    - run: mkdir wheelhouse && dir && Move-Item *.whl wheelhouse/ && dir
+#    - run: mkdir wheelhouse && dir && Move-Item *.whl wheelhouse/ && dir
 
 #    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && make install"
       
@@ -40,8 +40,10 @@ jobs:
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "dir && pip install delvewheel && delvewheel show -v --add-path . {wheel} && delvewheel repair -v --add-path . -w {dest_dir} {wheel}"
 
 #    - run: cd wheelhouse && dir && Expand-Archive uunet-2.2.dev3-cp311-cp311-win_amd64.whl && cd uunet-2.2.dev3-cp311-cp311-win_amd64 && dir && move ../../uunet.dll  uunet/ && cd .. && Compress-Archive -Force uunet-2.2.dev3-cp311-cp311-win_amd64 uunet-2.2.dev3-cp311-cp311-win_amd64.whl 
-    - run: cd wheelhouse && dir &&  Move-Item ../libuunet.dll libuunet.dll && Copy-Item libuunet.dll uunet.dll
-    - run: cd wheelhouse && dir && pip install delvewheel && delvewheel show -v --add-path . {wheel} && delvewheel repair -v --add-path . -w {dest_dir} {wheel}
+#    - run: mkdir wheelhouse && cd wheelhouse && dir &&  Move-Item ../libuunet.dll libuunet.dll && Copy-Item libuunet.dll uunet.dll
+
+# puts repaired in wheelhouse by default
+    - run: mkdir wheelhouse && dir && pip install delvewheel && delvewheel show -v --add-path . uunet-2.2.dev3-cp311-cp311-win_amd64.whl && delvewheel repair -v --add-path . uunet-2.2.dev3-cp311-cp311-win_amd64.whl
     - run: cd wheelhouse && dir && python -m pip cache purge && python -m pip install uunet-2.2.dev3-cp311-cp311-win_amd64.whl
       
     - run: cd wheelhouse && python -c "import os; wd = os.path.abspath('.'); os.add_dll_directory(wd); import uunet.multinet as ml ; ml.empty"
