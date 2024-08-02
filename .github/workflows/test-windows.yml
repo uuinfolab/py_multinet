@@ -18,15 +18,16 @@ jobs:
       with:
         python-version: '3.11'
 
-    - run: mkdir build && cd build && cmake -G "Unix Makefiles" .. && dir && Get-Content Makefile
+#    - run: mkdir build && cd build && cmake -G "Unix Makefiles" .. && dir && Get-Content Makefile
     
-    - run: cd build && make && dir
+#    - run: cd build && make && dir
 
 #    - run: "cd ext && cd uunet && mkdir build && cd build && cmake -G \"Unix Makefiles\" .. && make && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && Copy-Item \"libuunet.dll\" \"uunet.dll\" && dir"
 #    - run: "cd ext && cd uunet && mkdir build && cd build && cmake .. && cmake --build . && cd .. && cd .. && cd .. && Move-Item \"ext/uunet/build/libuunet.dll\" \"libuunet.dll\" && dir"
 
     - run: python -m pip wheel .
-      if: false
+
+    - run: dir && cd build && dir
 
 #    - run: mkdir wheelhouse && dir && Move-Item *.whl wheelhouse/ && dir
 
