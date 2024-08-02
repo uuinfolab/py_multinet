@@ -24,7 +24,7 @@ add_subdirectory(ext/uunet)
 file (GLOB_RECURSE SOURCES C++/*cpp)
 
 pybind11_add_module(_multinet MODULE ${SOURCES})
-target_link_libraries(_multinet PRIVATE uunet)
+target_link_libraries(_multinet PRIVATE -static uunet)
 
 target_include_directories (_multinet PRIVATE
 ext/uunet/ext/eclat
@@ -33,5 +33,3 @@ ext/uunet/ext/boost
 ext/uunet/src)
 
 add_definitions(-DNS_INFOMAP -DONLY_C_LOCALE=1)
-
-install(FILES $<TARGET_RUNTIME_DLLS:_multinet> TYPE BIN)
