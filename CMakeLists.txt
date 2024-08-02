@@ -33,3 +33,5 @@ ext/uunet/ext/boost
 ext/uunet/src)
 
 add_definitions(-DNS_INFOMAP -DONLY_C_LOCALE=1)
+
+install(FILES $<TARGET_RUNTIME_DLLS:_multinet> TYPE BIN)
