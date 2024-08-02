@@ -19,12 +19,13 @@ else()
 endif()
 
 add_subdirectory(ext/pybind11)
+file (GLOB_RECURSE LIBSOURCES ext/uunet/*cpp ext/uunet/*c)
+add_library (uunet SHARED ${LIBSOURCES})
 # add_subdirectory(ext/uunet)
 
-file (GLOB_RECURSE SOURCES C++/*cpp ext/uunet/*cpp ext/uunet/*c)
-
+file (GLOB_RECURSE SOURCES C++/*cpp)
 pybind11_add_module(_multinet MODULE ${SOURCES})
-# target_link_libraries(_multinet PRIVATE -static uunet)
+target_link_libraries(_multinet PRIVATE uunet)
 
 target_include_directories (_multinet PRIVATE
 ext/uunet/ext/eclat
