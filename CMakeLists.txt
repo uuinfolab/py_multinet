@@ -11,9 +11,9 @@ if (CMAKE_CXX_COMPILER MATCHES ".*clang.*" OR CMAKE_CXX_COMPILER_ID STREQUAL "Cl
 endif()
 
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fno-inline -std=c++17")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Iext/eclat/eclat/src -Iext/uunet/ext/eclat/tract/src -Iext/uunet/ext/eclat/math/src -Iext/uunet/ext/eclat/util/src -Iext/uunet/ext/eclat/apriori/src")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Iext/uunet/src -Iext/uunet/ext/boost -Iext/uunet/ext/eclat/eclat/src -Iext/uunet/ext/eclat/tract/src -Iext/uunet/ext/eclat/math/src -Iext/uunet/ext/eclat/util/src -Iext/uunet/ext/eclat/apriori/src -Iext/uunet/ext/infomap")
-set (CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DNS_INFOMAP -DONLY_C_LOCALE=1")
+#set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Iext/eclat/eclat/src -Iext/uunet/ext/eclat/tract/src -Iext/uunet/ext/eclat/math/src -Iext/uunet/ext/eclat/util/src -Iext/uunet/ext/eclat/apriori/src")
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Iext/uunet/src -Iext/uunet/ext/boost -Iext/uunet/ext/eclat/eclat/src -Iext/uunet/ext/eclat/tract/src -Iext/uunet/ext/eclat/math/src -Iext/uunet/ext/eclat/util/src -Iext/uunet/ext/eclat/apriori/src -Iext/uunet/ext/infomap")
+#set (CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DNS_INFOMAP -DONLY_C_LOCALE=1")
 
 if (APPLE)
     set(CMAKE_INSTALL_RPATH @loader_path)
@@ -24,10 +24,10 @@ endif()
 add_subdirectory(ext/pybind11)
 # add_subdirectory(ext/uunet)
 
-file (GLOB_RECURSE SOURCES C++/*cpp ext/uunet/ext/eclat/*.c ext/uunet/ext/infomap/*.cpp  ext/uunet/src/*cpp)
+#file (GLOB_RECURSE SOURCES C++/*cpp ext/uunet/ext/eclat/*.c ext/uunet/ext/infomap/*.cpp  ext/uunet/src/*cpp)
+file (GLOB_RECURSE SOURCES C++/*cpp)
 pybind11_add_module(_multinet MODULE ${SOURCES})
-# target_link_libraries(_multinet PRIVATE uunet)
-
+target_link_libraries(_multinet PRIVATE libuunet.dll)
 target_include_directories (_multinet PRIVATE
 ext/uunet/ext/eclat
 ext/uunet/ext/infomap
