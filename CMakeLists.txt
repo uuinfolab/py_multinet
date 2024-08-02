@@ -22,7 +22,7 @@ else()
 endif()
 
 add_subdirectory(ext/pybind11)
-#add_subdirectory(ext/uunet)
+add_subdirectory(ext/uunet)
 
 file (GLOB_RECURSE SOURCES C++/*cpp ext/uunet/ext/eclat/*.c ext/uunet/ext/infomap/*.cpp  ext/uunet/src/*cpp)
 #file (GLOB_RECURSE SOURCES C++/*cpp)
