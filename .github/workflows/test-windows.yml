@@ -3,14 +3,13 @@ name: windows wheels test
 on: [workflow_dispatch]
 
 jobs:
-  test_window_wheels:
-    name: Wheels on windows-latest ${{ matrix.py_version }}
-    runs-on: windows-latest
+  build_wheels:
+    name: Wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        py_version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
-    
+        os: [windows-latest]
     steps:
     - name: Checkout library
       uses: actions/checkout@v4
@@ -20,19 +19,14 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.py_version }}
+        python-version: 3.8
+      if: runner.os == 'macOS' && runner.arch == 'ARM64'
 
-    - run: python -m pip wheel .
+    - name: Install cibuildwheel
+      run: python -m pip install cibuildwheel==2.19.2
 
-    - run: mkdir wheelhouse && Move-Item uunet*.whl wheelhouse/
-
-#    - run: cd wheelhouse && dir && python -m pip cache purge && python -m pip install uunet-2.2.dev3-cp311-cp311-win_amd64.whl     
-#    - run: cd wheelhouse && python -c "import uunet.multinet as ml ; ml.empty()"
-      
-    - uses: actions/upload-artifact@v4
-      if: false
-      with:
-        name: cibw-wheels-win-${{ matrix.py_version }}
-        path: wheelhouse/*.whl
-        
-    
+    - name: Build wheels
+      run: python -m cibuildwheel --output-dir wheelhouse
+      env:
+        CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: cd wheelhouse && python -m pip cache purge && python -m pip install {wheel} && python -c "import uunet.multinet as ml ; ml.empty()"
