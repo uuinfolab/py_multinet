@@ -28,5 +28,6 @@ jobs:
     - name: Build wheels
       run: python -m cibuildwheel --output-dir wheelhouse
       env:
+        CIBW_SKIP: "*-win32"
         CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: cd wheelhouse && python -m pip cache purge && python -m pip install {wheel} && python -c "import uunet.multinet as ml ; ml.empty()"
