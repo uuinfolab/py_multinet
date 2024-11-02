@@ -1,3 +1,7 @@
+# version 2.2.2
+
+- Fixed duplicate multilayer edges in writing function.
+
 # version 2.2.1
 
 - Fixed I/O bugs.
