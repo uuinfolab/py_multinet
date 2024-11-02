@@ -1942,7 +1942,8 @@ PyMLNetwork
 readMultilayer(const std::string& input_file,
                const std::string& name, bool vertex_aligned)
 {
-    return PyMLNetwork(uu::net::read_multilayer_network(input_file,name,vertex_aligned));
+    auto n = PyMLNetwork(uu::net::read_multilayer_network(input_file,name,vertex_aligned));
+    return n;
 }
 
 
